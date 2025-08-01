@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Flex, Heading, Text, Card, Box, Checkbox, Button } from '@radix-ui/themes';
+import { Container, Flex, Heading, Text, Card, Box, Checkbox, Button, Section } from '@radix-ui/themes';
 import './App.css'; // Keep App.css for custom styles if needed
 import { Dropzone } from './components/Dropzone';
 import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'; // Import useInfiniteQuery and InfiniteData
@@ -106,220 +106,224 @@ function App() {
 
 
   return (
-    <Container size="4"> {/* Increased container size for two columns */}
-      <Flex gap="4" py="5"> {/* Main flex container for two columns */}
-        {/* Left Column: Uploader */}
-        <Flex direction="column" gap="4" style={{ flex: 1 }}>
-          <Heading as="h1" size="8" align="center">S3 File Uploader</Heading>
-
-          <Card style={{ width: '100%' }}>
-            <Flex direction="column" gap="3" align="center">
-              <Text as="div" size="2" mb="2">Drag and drop files here, or click to select files.</Text>
-              <Dropzone onFilesDropped={handleFilesDropped} />
-              <Flex direction={"column"} gapY={"3"} justify="between" align="center">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <Checkbox
-                    checked={overrideExistingFiles}
-                    onCheckedChange={(checked) => setOverrideExistingFiles(checked as boolean)}
-                  />
-                  <Text size="2">Override existing files</Text>
-                </label>
-                <Button onClick={startUploads} disabled={queued.length === 0} variant="solid" color="green">
-                  Start Uploads ({queued.length} queued)
-                </Button>
-              </Flex>
-            </Flex>
-          </Card>
-
-        {skipped.length > 0 && (
-          <Card style={{ width: '100%' }}>
-            <Flex justify="between" align="center" mb="2">
-              <Flex align="center" gap="2">
-                <Heading size="4">Skipped Files ({skipped.length})</Heading>
-                <Button variant="ghost" size="1" onClick={() => setIsSkippedCollapsed(!isSkippedCollapsed)}>
-                  {isSkippedCollapsed ? 'Show' : 'Hide'}
-                </Button>
-              </Flex>
-              <Button onClick={() => {
-                setFilesToUpload(prev => prev.map(f =>
-                  f.status === 'skipped' ? { ...f, status: 'queued' } : f
-                ));
-              }} variant="outline">
-                Upload Skipped
-              </Button>
-            </Flex>
-            {!isSkippedCollapsed && (
-              <>
-                <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
-                  {skipped.slice((skippedCurrentPage - 1) * ITEMS_PER_PAGE, skippedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
-                    <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                      {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                      <Text size="2" color="gray">
-                        {fileState.file.name} - Already uploaded
-                      </Text>
-                    </Flex>
-                  ))}
+    <Section>
+      <Section>
+        <Flex justify={"center"}>
+          <Container size="4">
+            <Flex direction="column" gap="4">
+              <Card style={{ width: '100%' }}>
+                <Heading as="h1" size="8" align="center">File Uploader</Heading>
+                <Flex direction="column" gap="3" align="center">
+                  <Text as="div" size="2" mb="2">Drag and drop files here, or click to select files.</Text>
+                  <Dropzone onFilesDropped={handleFilesDropped} />
+                  <Flex direction={"column"} gapY={"3"} justify="between" align="center">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Checkbox
+                        checked={overrideExistingFiles}
+                        onCheckedChange={(checked) => setOverrideExistingFiles(checked as boolean)}
+                      />
+                      <Text size="2">Override existing files</Text>
+                    </label>
+                    <Button onClick={startUploads} disabled={queued.length === 0} variant="solid" color="green">
+                      Start Uploads ({queued.length} queued)
+                    </Button>
+                  </Flex>
                 </Flex>
-                {skipped.length > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={skippedCurrentPage}
-                    totalPages={Math.ceil(skipped.length / ITEMS_PER_PAGE)}
-                    onPageChange={setSkippedCurrentPage}
-                  />
-                )}
-              </>
-            )}
-          </Card>
-        )}
+              </Card>
 
-        {uploading.length > 0 && (
-          <Card style={{ width: '100%' }}>
-            <Flex justify="between" align="center" mb="2">
-              <Flex align="center" gap="2">
-                <Heading size="4">Uploading ({uploading.length})</Heading>
-                <Button variant="ghost" size="1" onClick={() => setIsUploadingCollapsed(!isUploadingCollapsed)}>
-                  {isUploadingCollapsed ? 'Show' : 'Hide'}
-                </Button>
-              </Flex>
-            </Flex>
-            {!isUploadingCollapsed && (
-              <>
-                <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
-                  {uploading.slice((uploadingCurrentPage - 1) * ITEMS_PER_PAGE, uploadingCurrentPage * ITEMS_PER_PAGE).map(fileState => (
-                    <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                      {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                      <Box>
-                        <Text size="2">{fileState.file.name}</Text>
-                        <ProgressBar value={fileState.progress} />
-                      </Box>
+              {skipped.length > 0 && (
+                <Card style={{ width: '100%' }}>
+                  <Flex justify="between" align="center" mb="2">
+                    <Flex align="center" gap="2">
+                      <Heading size="4">Skipped Files ({skipped.length})</Heading>
+                      <Button variant="ghost" size="1" onClick={() => setIsSkippedCollapsed(!isSkippedCollapsed)}>
+                        {isSkippedCollapsed ? 'Show' : 'Hide'}
+                      </Button>
                     </Flex>
-                  ))}
-                </Flex>
-                {uploading.length > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={uploadingCurrentPage}
-                    totalPages={Math.ceil(uploading.length / ITEMS_PER_PAGE)}
-                    onPageChange={setUploadingCurrentPage}
-                  />
-                )}
-              </>
-            )}
-          </Card>
-        )}
+                    <Button onClick={() => {
+                      setFilesToUpload(prev => prev.map(f =>
+                        f.status === 'skipped' ? { ...f, status: 'queued' } : f
+                      ));
+                    }} variant="outline">
+                      Upload Skipped
+                    </Button>
+                  </Flex>
+                  {!isSkippedCollapsed && (
+                    <>
+                      <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
+                        {skipped.slice((skippedCurrentPage - 1) * ITEMS_PER_PAGE, skippedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
+                          <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
+                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Text size="2" color="gray">
+                              {fileState.file.name} - Already uploaded
+                            </Text>
+                          </Flex>
+                        ))}
+                      </Flex>
+                      {skipped.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          currentPage={skippedCurrentPage}
+                          totalPages={Math.ceil(skipped.length / ITEMS_PER_PAGE)}
+                          onPageChange={setSkippedCurrentPage}
+                        />
+                      )}
+                    </>
+                  )}
+                </Card>
+              )}
 
-        {queued.length > 0 && (
-          <Card style={{ width: '100%' }}>
-            <Flex justify="between" align="center" mb="2">
-              <Flex align="center" gap="2">
-                <Heading size="4">Queued ({queued.length})</Heading>
-                <Button variant="ghost" size="1" onClick={() => setIsQueuedCollapsed(!isQueuedCollapsed)}>
-                  {isQueuedCollapsed ? 'Show' : 'Hide'}
-                </Button>
-              </Flex>
-            </Flex>
-            {!isQueuedCollapsed && (
-              <>
-                <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
-                  {queued.slice((queuedCurrentPage - 1) * ITEMS_PER_PAGE, queuedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
-                    <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                      {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                      <Text size="2">
-                        {fileState.file.name}
-                      </Text>
+              {uploading.length > 0 && (
+                <Card style={{ width: '100%' }}>
+                  <Flex justify="between" align="center" mb="2">
+                    <Flex align="center" gap="2">
+                      <Heading size="4">Uploading ({uploading.length})</Heading>
+                      <Button variant="ghost" size="1" onClick={() => setIsUploadingCollapsed(!isUploadingCollapsed)}>
+                        {isUploadingCollapsed ? 'Show' : 'Hide'}
+                      </Button>
                     </Flex>
-                  ))}
-                </Flex>
-                {queued.length > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={queuedCurrentPage}
-                    totalPages={Math.ceil(queued.length / ITEMS_PER_PAGE)}
-                    onPageChange={setQueuedCurrentPage}
-                  />
-                )}
-              </>
-            )}
-          </Card>
-        )}
+                  </Flex>
+                  {!isUploadingCollapsed && (
+                    <>
+                      <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
+                        {uploading.slice((uploadingCurrentPage - 1) * ITEMS_PER_PAGE, uploadingCurrentPage * ITEMS_PER_PAGE).map(fileState => (
+                          <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
+                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Box>
+                              <Text size="2">{fileState.file.name}</Text>
+                              <ProgressBar value={fileState.progress} />
+                            </Box>
+                          </Flex>
+                        ))}
+                      </Flex>
+                      {uploading.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          currentPage={uploadingCurrentPage}
+                          totalPages={Math.ceil(uploading.length / ITEMS_PER_PAGE)}
+                          onPageChange={setUploadingCurrentPage}
+                        />
+                      )}
+                    </>
+                  )}
+                </Card>
+              )}
 
-        {failed.length > 0 && (
-          <Card style={{ width: '100%' }}>
-            <Flex justify="between" align="center" mb="2">
-              <Flex align="center" gap="2">
-                <Heading size="4" color="red">Failed ({failed.length})</Heading>
-                <Button variant="ghost" size="1" onClick={() => setIsFailedCollapsed(!isFailedCollapsed)}>
-                  {isFailedCollapsed ? 'Show' : 'Hide'}
-                </Button>
-              </Flex>
-            </Flex>
-            {!isFailedCollapsed && (
-              <>
-                <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
-                  {failed.slice((failedCurrentPage - 1) * ITEMS_PER_PAGE, failedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
-                    <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                      {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                      <Text size="2" color="red">
-                        {fileState.file.name} - {fileState.error || 'Unknown error'}
-                      </Text>
+              {queued.length > 0 && (
+                <Card style={{ width: '100%' }}>
+                  <Flex justify="between" align="center" mb="2">
+                    <Flex align="center" gap="2">
+                      <Heading size="4">Queued ({queued.length})</Heading>
+                      <Button variant="ghost" size="1" onClick={() => setIsQueuedCollapsed(!isQueuedCollapsed)}>
+                        {isQueuedCollapsed ? 'Show' : 'Hide'}
+                      </Button>
                     </Flex>
-                  ))}
-                </Flex>
-                {failed.length > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={failedCurrentPage}
-                    totalPages={Math.ceil(failed.length / ITEMS_PER_PAGE)}
-                    onPageChange={setFailedCurrentPage}
-                  />
-                )}
-              </>
-            )}
-          </Card>
-        )}
+                  </Flex>
+                  {!isQueuedCollapsed && (
+                    <>
+                      <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
+                        {queued.slice((queuedCurrentPage - 1) * ITEMS_PER_PAGE, queuedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
+                          <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
+                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Text size="2">
+                              {fileState.file.name}
+                            </Text>
+                          </Flex>
+                        ))}
+                      </Flex>
+                      {queued.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          currentPage={queuedCurrentPage}
+                          totalPages={Math.ceil(queued.length / ITEMS_PER_PAGE)}
+                          onPageChange={setQueuedCurrentPage}
+                        />
+                      )}
+                    </>
+                  )}
+                </Card>
+              )}
 
-        {uploaded.length > 0 && (
-          <Card style={{ width: '100%' }}>
-            <Flex justify="between" align="center" mb="2">
-              <Flex align="center" gap="2">
-                <Heading size="4">Uploaded ({uploaded.length})</Heading>
-                <Button variant="ghost" size="1" onClick={() => setIsUploadedCollapsed(!isUploadedCollapsed)}>
-                  {isUploadedCollapsed ? 'Show' : 'Hide'}
-                </Button>
-              </Flex>
-            </Flex>
-            {!isUploadedCollapsed && (
-              <>
-                <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
-                  {uploaded.map(fileState => (
-                    <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                      {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                  <Text size="2" color="green">
-                    {fileState.file.name} - Uploaded
-                  </Text>
+              {failed.length > 0 && (
+                <Card style={{ width: '100%' }}>
+                  <Flex justify="between" align="center" mb="2">
+                    <Flex align="center" gap="2">
+                      <Heading size="4" color="red">Failed ({failed.length})</Heading>
+                      <Button variant="ghost" size="1" onClick={() => setIsFailedCollapsed(!isFailedCollapsed)}>
+                        {isFailedCollapsed ? 'Show' : 'Hide'}
+                      </Button>
                     </Flex>
-                  ))}
-                </Flex>
-                {uploaded.length > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={uploadedCurrentPage}
-                    totalPages={Math.ceil(uploaded.length / ITEMS_PER_PAGE)}
-                    onPageChange={setUploadedCurrentPage}
-                  />
-                )}
-              </>
-            )}
-          </Card>
-        )}
-        </Flex> {/* End of Left Column */}
+                  </Flex>
+                  {!isFailedCollapsed && (
+                    <>
+                      <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
+                        {failed.slice((failedCurrentPage - 1) * ITEMS_PER_PAGE, failedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
+                          <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
+                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Text size="2" color="red">
+                              {fileState.file.name} - {fileState.error || 'Unknown error'}
+                            </Text>
+                          </Flex>
+                        ))}
+                      </Flex>
+                      {failed.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          currentPage={failedCurrentPage}
+                          totalPages={Math.ceil(failed.length / ITEMS_PER_PAGE)}
+                          onPageChange={setFailedCurrentPage}
+                        />
+                      )}
+                    </>
+                  )}
+                </Card>
+              )}
 
-        {/* Right Column: Image Gallery */}
-        <Flex direction="column" gap="4" style={{ flex: 1 }}>
-          <Heading as="h1" size="8" align="center">S3 Image Gallery</Heading>
-          {isGalleryLoading && <Text align="center">Loading images...</Text>}
-          {isGalleryError && <Text align="center" color="red">{galleryError?.message || "Failed to load images from S3."}</Text>}
-          {!isGalleryLoading && !isGalleryError && (!s3ImageUrls || s3ImageUrls.length === 0) && (
-            <Text align="center">No images found in S3 bucket.</Text>
-          )}
-          {!isGalleryLoading && !isGalleryError && s3GalleryData && s3GalleryData.pages.length > 0 && (
-            <Card style={{ width: '100%' }}>
+              {uploaded.length > 0 && (
+                <Card style={{ width: '100%' }}>
+                  <Flex justify="between" align="center" mb="2">
+                    <Flex align="center" gap="2">
+                      <Heading size="4">Uploaded ({uploaded.length})</Heading>
+                      <Button variant="ghost" size="1" onClick={() => setIsUploadedCollapsed(!isUploadedCollapsed)}>
+                        {isUploadedCollapsed ? 'Show' : 'Hide'}
+                      </Button>
+                    </Flex>
+                  </Flex>
+                  {!isUploadedCollapsed && (
+                    <>
+                      <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
+                        {uploaded.slice((uploadedCurrentPage - 1) * ITEMS_PER_PAGE, uploadedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
+                          <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
+                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Text size="2" color="green">
+                              {fileState.file.name} - Uploaded
+                            </Text>
+                          </Flex>
+                        ))}
+                      </Flex>
+                      {uploaded.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          currentPage={uploadedCurrentPage}
+                          totalPages={Math.ceil(uploaded.length / ITEMS_PER_PAGE)}
+                          onPageChange={setUploadedCurrentPage}
+                        />
+                      )}
+                    </>
+                  )}
+                </Card>
+              )}
+            </Flex>
+          </Container>
+        </Flex>
+      </Section>
+      {!isGalleryLoading && !isGalleryError && s3GalleryData && s3GalleryData.pages.length > 0 && (
+        <Section>
+          <Flex justify={"center"}>
+            <Card>
+              <Heading as="h1" size="8" align="center">Gallery</Heading>
+              <br />
+              {isGalleryLoading && <Text align="center">Loading images...</Text>}
+              {isGalleryError && <Text align="center" color="red">{(galleryError as any)?.message || "Failed to load images from S3."}</Text>}
+              {!isGalleryLoading && !isGalleryError && (!s3ImageUrls || s3ImageUrls.length === 0) && (
+                <Text align="center">No images found in S3 bucket.</Text>
+              )}
+
               <Flex wrap="wrap" gap="2" justify="center">
                 {s3GalleryData.pages.flatMap(page => page.imageUrls).map((url: string, index: number) => (
                   <Box key={url} style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 4 }}>
@@ -333,10 +337,11 @@ function App() {
                 </Button>
               </Flex>
             </Card>
-          )}
-        </Flex> {/* End of Right Column */}
-      </Flex>
-    </Container>
+
+          </Flex> {/* End of Right Column */}
+        </Section>
+      )}
+    </Section>
   );
 }
 

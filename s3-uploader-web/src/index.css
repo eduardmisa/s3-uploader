@@ -11,6 +11,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100dvw; /* Ensure root takes full viewport width */
 }
 
 body {
@@ -19,7 +20,7 @@ body {
   justify-content: center; /* Center content horizontally */
   align-items: center; /* Center content vertically */
   min-height: 100vh; /* Ensure body takes full viewport height */
-  width: 100vw; /* Ensure body takes full viewport width */
+  width: 100dvw; /* Ensure body takes full viewport width */
 }
 
 a {
