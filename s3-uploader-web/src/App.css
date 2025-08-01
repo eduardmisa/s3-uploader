@@ -1,0 +1,46 @@
+/* Basic styling for desktop-first approach */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--gray-1); /* Radix UI background color */
+}
+
+.radix-themes {
+  min-height: 100vh;
+}
+
+/* Center the main container and limit its width on larger screens */
+.rt-Container {
+  max-width: 800px; /* Adjust as needed for your desired desktop width */
+}
+
+/* General button styles */
+button {
+  cursor: pointer !important;
+}
+
+button:disabled {
+  background-color: var(--gray-5);
+  color: var(--gray-9);
+  cursor: not-allowed;
+}
+
+/* Micro-animation for file list items */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-item-enter {
+  animation: fadeIn 0.3s ease-out forwards;
+}

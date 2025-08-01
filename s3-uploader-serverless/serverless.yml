@@ -1,0 +1,58 @@
+service: s3-uploader-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-southeast-1
+  apiGateway:
+    usagePlan:
+      quota:
+        limit: 1000000
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:ListBucket
+      Resource:
+        - "arn:aws:s3:::emisa-pub-pictures"
+        - "arn:aws:s3:::emisa-pub-pictures/*"
+
+build:
+  esbuild:
+    bundle: true
+    external:
+      - '@aws-sdk/*'
+    packages: external
+    buildConcurrency: 3
+    minify: false
+    sourcemap:
+      type: linked
+      setNodeOptions: true
+
+functions:
+  getPresignedUrl:
+    handler: src/handlers/s3.getPresignedUrl
+    events:
+      - http:
+          path: upload
+          method: post
+          cors:
+            origin: "*"
+
+  listS3Images:
+    handler: src/handlers/s3.listImages
+    events:
+      - http:
+          path: images
+          method: get
+          cors:
+            origin: "*"
+
+resources:
+  Resources:
+    # No resources needed for this simplified backend
