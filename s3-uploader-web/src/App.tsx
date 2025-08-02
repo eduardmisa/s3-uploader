@@ -367,12 +367,12 @@ const Image = (props: any) => {
   return (
     <img
       {...props}
-      onError={e => {
-        const target = e.currentTarget as HTMLImageElement;
-        if (target.src !== DEFAULT_IMAGE) {
-          target.src = DEFAULT_IMAGE;
-        }
-      }}
+      // onError={e => {
+      //   const target = e.currentTarget as HTMLImageElement;
+      //   if (target.src !== DEFAULT_IMAGE) {
+      //     target.src = DEFAULT_IMAGE;
+      //   }
+      // }}
     />
   )
 }
