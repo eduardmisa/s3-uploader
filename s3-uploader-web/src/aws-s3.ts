@@ -44,12 +44,12 @@ export const uploadFileToS3 = async (file: File, onProgress: (progress: number) 
   }
 };
 
-export interface ListImagesResult {
-  imageUrls: string[];
+export interface ListFilesResult {
+  fileUrls: string[];
   nextContinuationToken?: string;
 }
 
-export const listImagesFromS3 = async (limit: number, continuationToken?: string): Promise<ListImagesResult> => {
+export const listFilesFromS3 = async (limit: number, continuationToken?: string): Promise<ListFilesResult> => {
   try {
     const response = await axios.get(`${BACKEND_API_URL}/files`, {
       params: {
@@ -57,10 +57,10 @@ export const listImagesFromS3 = async (limit: number, continuationToken?: string
         continuationToken,
       },
     });
-    const { imageUrls, nextContinuationToken } = response.data;
-    return { imageUrls, nextContinuationToken };
+    const { fileUrls, nextContinuationToken } = response.data;
+    return { fileUrls, nextContinuationToken };
   } catch (error) {
-    console.error("Error listing images from S3 via backend:", error);
+    console.error("Error listing files from S3 via backend:", error);
     throw error;
   }
 };

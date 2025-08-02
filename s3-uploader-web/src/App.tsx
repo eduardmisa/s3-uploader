@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Container, Flex, Heading, Text, Card, Box, Checkbox, Button, Section } from '@radix-ui/themes';
 import './App.css'; // Keep App.css for custom styles if needed
 import { Dropzone } from './components/Dropzone';
-import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'; // Import useInfiniteQuery and InfiniteData
-import { ProgressBar } from './components/ProgressBar'; // Import ProgressBar
-import { Pagination } from './components/Pagination'; // Import Pagination
-import { listImagesFromS3, type ListImagesResult } from './aws-s3'; // Import listImagesFromS3 and ListImagesResult
-import { useUploadsManager } from './hooks/useUploadsManager'; // Import useUploadsManager
+import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
+import { ProgressBar } from './components/ProgressBar';
+import { Pagination } from './components/Pagination';
+import { listFilesFromS3, type ListFilesResult } from './aws-s3';
+import { useUploadsManager } from './hooks/useUploadsManager';
+
+const DEFAULT_IMAGE = '/file-image.png'; // Default image for previews
 
 // Define a type for the file state
 export type FileUploadState = {
@@ -36,14 +38,14 @@ function App() {
   const [isUploadedCollapsed, setIsUploadedCollapsed] = useState(false);
 
   // React Query for S3 image gallery
-  const { data: s3GalleryData, isLoading: isGalleryLoading, isError: isGalleryError, error: galleryError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<ListImagesResult, Error, InfiniteData<ListImagesResult>, string[], string | undefined>({
-    queryKey: ['s3Images'],
-    queryFn: ({ pageParam }) => listImagesFromS3(ITEMS_PER_PAGE, pageParam),
+  const { data: s3FileData, isLoading: isFilesLoading, isError: isFilesError, error: galleryError, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<ListFilesResult, Error, InfiniteData<ListFilesResult>, string[], string | undefined>({
+    queryKey: ['s3Files'],
+    queryFn: ({ pageParam }) => listFilesFromS3(ITEMS_PER_PAGE, pageParam),
     initialPageParam: undefined, // Start with no continuation token
-    getNextPageParam: (lastPage: ListImagesResult) => lastPage.nextContinuationToken, // Explicitly type lastPage
+    getNextPageParam: (lastPage: ListFilesResult) => lastPage.nextContinuationToken, // Explicitly type lastPage
   });
 
-  const s3ImageUrls = s3GalleryData?.pages.flatMap((page: ListImagesResult) => page.imageUrls) || []; // Flatten all pages for display, explicitly type page
+  const s3FileUrls = s3FileData?.pages.flatMap((page: ListFilesResult) => page.fileUrls) || []; // Flatten all pages for display, explicitly type page
 
   // States for pagination
   const ITEMS_PER_PAGE = 10;
@@ -124,7 +126,7 @@ function App() {
                       />
                       <Text size="2">Override existing files</Text>
                     </label>
-                    <Button onClick={startUploads} disabled={queued.length === 0} variant="solid" color="green">
+                    <Button size={"4"} onClick={startUploads} disabled={queued.length === 0} variant="solid" color="green">
                       Start Uploads ({queued.length} queued)
                     </Button>
                   </Flex>
@@ -153,7 +155,7 @@ function App() {
                       <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
                         {skipped.slice((skippedCurrentPage - 1) * ITEMS_PER_PAGE, skippedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
                           <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Image src={fileState.preview || DEFAULT_IMAGE} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
                             <Text size="2" color="gray">
                               {fileState.file.name} - Already uploaded
                             </Text>
@@ -187,7 +189,7 @@ function App() {
                       <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
                         {uploading.slice((uploadingCurrentPage - 1) * ITEMS_PER_PAGE, uploadingCurrentPage * ITEMS_PER_PAGE).map(fileState => (
                           <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Image src={fileState.preview || DEFAULT_IMAGE} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
                             <Box>
                               <Text size="2">{fileState.file.name}</Text>
                               <ProgressBar value={fileState.progress} />
@@ -222,7 +224,7 @@ function App() {
                       <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
                         {queued.slice((queuedCurrentPage - 1) * ITEMS_PER_PAGE, queuedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
                           <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Image src={fileState.preview || DEFAULT_IMAGE} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
                             <Text size="2">
                               {fileState.file.name}
                             </Text>
@@ -256,7 +258,7 @@ function App() {
                       <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
                         {failed.slice((failedCurrentPage - 1) * ITEMS_PER_PAGE, failedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
                           <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Image src={fileState.preview || DEFAULT_IMAGE} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
                             <Text size="2" color="red">
                               {fileState.file.name} - {fileState.error || 'Unknown error'}
                             </Text>
@@ -290,7 +292,7 @@ function App() {
                       <Flex direction="column" gap="2" style={{ minHeight: '100px' }}> {/* Changed to min-height, removed overflow */}
                         {uploaded.slice((uploadedCurrentPage - 1) * ITEMS_PER_PAGE, uploadedCurrentPage * ITEMS_PER_PAGE).map(fileState => (
                           <Flex key={fileState.id} align="center" gap="2" className="file-item-enter">
-                            {fileState.preview && <img src={fileState.preview} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
+                            <Image src={fileState.preview || DEFAULT_IMAGE} alt="preview" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
                             <Text size="2" color="green">
                               {fileState.file.name} - Uploaded
                             </Text>
@@ -312,22 +314,27 @@ function App() {
           </Container>
         </Flex>
       </Section>
-      {!isGalleryLoading && !isGalleryError && s3GalleryData && s3GalleryData.pages.length > 0 && (
+      {!isFilesLoading && !isFilesError && s3FileData && s3FileData.pages.length > 0 && (
         <Section>
           <Flex justify={"center"}>
             <Card>
               <Heading as="h1" size="8" align="center">Gallery</Heading>
               <br />
-              {isGalleryLoading && <Text align="center">Loading images...</Text>}
-              {isGalleryError && <Text align="center" color="red">{(galleryError as any)?.message || "Failed to load images from S3."}</Text>}
-              {!isGalleryLoading && !isGalleryError && (!s3ImageUrls || s3ImageUrls.length === 0) && (
+              {isFilesLoading && <Text align="center">Loading images...</Text>}
+              {isFilesError && <Text align="center" color="red">{(galleryError as any)?.message || "Failed to load images from S3."}</Text>}
+              {!isFilesLoading && !isFilesError && (!s3FileUrls || s3FileUrls.length === 0) && (
                 <Text align="center">No images found in S3 bucket.</Text>
               )}
 
               <Flex wrap="wrap" gap="2" justify="center">
-                {s3GalleryData.pages.flatMap(page => page.imageUrls).map((url: string, index: number) => (
+                {s3FileData.pages.flatMap(page => page.fileUrls).map((url: string, index: number) => (
                   <Box key={url} style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 4 }}>
-                    <img src={url} alt={`S3 Image ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image
+                      src={url}
+                      alt={`S3 Image ${index}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <span></span>
                   </Box>
                 ))}
               </Flex>
@@ -343,6 +350,20 @@ function App() {
       )}
     </Section>
   );
+}
+
+const Image = (props: any) => {
+  return (
+    <img
+      {...props}
+      onError={e => {
+        const target = e.currentTarget as HTMLImageElement;
+        if (target.src !== DEFAULT_IMAGE) {
+          target.src = DEFAULT_IMAGE;
+        }
+      }}
+    />
+  )
 }
 
 export default App;

@@ -15,8 +15,8 @@ export const useUploadFileMutation = () => {
       return uploadFileToS3(file, onProgress);
     },
     onSuccess: (data, variables) => {
-      // Invalidate and refetch the S3 images query after a successful upload
-      queryClient.invalidateQueries({ queryKey: ['s3Images'] });
+      // Invalidate and refetch the S3 files query after a successful upload
+      queryClient.invalidateQueries({ queryKey: ['s3Files'] });
       // You might also want to update the local state of filesToUpload here
       // or handle it in the component that calls this mutation.
     },
