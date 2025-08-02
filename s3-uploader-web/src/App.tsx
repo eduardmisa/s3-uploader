@@ -342,7 +342,7 @@ function App() {
                       size="1"
                       align="center"
                       style={{ wordBreak: 'break-all', marginTop: 2, maxWidth: 90, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                      title={"name"}
+                      title={name}
                     >
                       {name}
                     </Text>
