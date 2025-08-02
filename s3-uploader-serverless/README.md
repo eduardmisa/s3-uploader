@@ -1,6 +1,6 @@
 # S3 Uploader Backend API
 
-A serverless API built with AWS Lambda to provide secure pre-signed URLs for S3 uploads and to list images from an S3 bucket. This backend allows the frontend application to interact with S3 without exposing AWS credentials directly.
+A serverless API built with AWS Lambda to provide secure pre-signed URLs for S3 uploads and to list files from an S3 bucket. This backend allows the frontend application to interact with S3 without exposing AWS credentials directly.
 
 ## Repository Setup
 
@@ -31,11 +31,11 @@ Generates a pre-signed URL for uploading a file to an S3 bucket. The frontend ca
 }
 ```
 
-### GET /images
+### GET /files
 Retrieves a list of image URLs from the configured S3 bucket. This endpoint supports fetching-level pagination.
 
 **Query Parameters:**
-- `limit` (optional): The maximum number of images to return per request (default is set in Lambda).
+- `limit` (optional): The maximum number of files to return per request (default is set in Lambda).
 - `continuationToken` (optional): Token for fetching the next page of results.
 
 **Response:**

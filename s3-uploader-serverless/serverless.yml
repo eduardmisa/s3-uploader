@@ -44,11 +44,11 @@ functions:
           cors:
             origin: "*"
 
-  listS3Images:
-    handler: src/handlers/s3.listImages
+  listS3Files:
+    handler: src/handlers/s3.listFiles
     events:
       - http:
-          path: images
+          path: files
           method: get
           cors:
             origin: "*"

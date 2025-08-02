@@ -51,7 +51,7 @@ export interface ListImagesResult {
 
 export const listImagesFromS3 = async (limit: number, continuationToken?: string): Promise<ListImagesResult> => {
   try {
-    const response = await axios.get(`${BACKEND_API_URL}/images`, {
+    const response = await axios.get(`${BACKEND_API_URL}/files`, {
       params: {
         limit,
         continuationToken,

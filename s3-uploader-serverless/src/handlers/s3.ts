@@ -49,7 +49,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
   }
 };
 
-export const listImages: APIGatewayProxyHandler = async (event) => {
+export const listFiles: APIGatewayProxyHandler = async (event) => {
   try {
     const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit) : 10; // Default to 10
     const continuationToken = event.queryStringParameters?.continuationToken || undefined;
@@ -62,29 +62,29 @@ export const listImages: APIGatewayProxyHandler = async (event) => {
 
     const { Contents, NextContinuationToken } = await s3Client.send(command);
 
-    const imageUrls: string[] = [];
+    const fileUrls: string[] = [];
     if (Contents) {
       Contents.forEach(object => {
-        if (object.Key && (object.Key.endsWith('.jpg') || object.Key.endsWith('.jpeg') || object.Key.endsWith('.png') || object.Key.endsWith('.gif') || object.Key.endsWith('.bmp') || object.Key.endsWith('.webp'))) {
-          const imageUrl = `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${object.Key}`;
-          imageUrls.push(imageUrl);
+        if (object.Key) {
+          const fileUrl = `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${object.Key}`;
+          fileUrls.push(fileUrl);
         }
       });
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ imageUrls, nextContinuationToken: NextContinuationToken }),
+      body: JSON.stringify({ fileUrls, nextContinuationToken: NextContinuationToken }),
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
     };
   } catch (error) {
-    console.error("Error listing images from S3:", error);
+    console.error("Error listing files from S3:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to list images from S3', error: error instanceof Error ? error.message : 'Unknown error' }),
+      body: JSON.stringify({ message: 'Failed to list files from S3', error: error instanceof Error ? error.message : 'Unknown error' }),
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
