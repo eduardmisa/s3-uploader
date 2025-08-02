@@ -327,14 +327,25 @@ function App() {
               )}
 
               <Flex wrap="wrap" gap="2" justify="center">
-                {s3FileData.pages.flatMap(page => page.fileUrls).map((url: string, index: number) => (
-                  <Box key={url} style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 4 }}>
+                {s3FileData.pages.flatMap(page => page.fileUrls.map((url, i) => ({
+                  url,
+                  name: url.split('/').pop() || 'Unknown'
+                }))).map(({ url, name }, index) => (
+                  <Box key={url} style={{ width: 100, height: 120, overflow: 'hidden', borderRadius: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Image
+                      id={`tooltip${index}`}
                       src={url}
                       alt={`S3 Image ${index}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
                     />
-                    <span></span>
+                    <Text
+                      size="1"
+                      align="center"
+                      style={{ wordBreak: 'break-all', marginTop: 2, maxWidth: 90, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                      title={"name"}
+                    >
+                      {name}
+                    </Text>
                   </Box>
                 ))}
               </Flex>

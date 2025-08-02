@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { uploadFileToS3 } from '../aws-s3';
-import type { FileUploadState } from '../App'; // Assuming FileUploadState is exported from App.tsx
 
 interface UploadMutationVariables {
   file: File;
@@ -14,7 +13,7 @@ export const useUploadFileMutation = () => {
     mutationFn: async ({ file, onProgress }: UploadMutationVariables) => {
       return uploadFileToS3(file, onProgress);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       // Invalidate and refetch the S3 files query after a successful upload
       queryClient.invalidateQueries({ queryKey: ['s3Files'] });
       // You might also want to update the local state of filesToUpload here

@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-// Removed direct AWS SDK S3 client configuration
-// const s3 = new AWS.S3();
-// const S3_BUCKET = import.meta.env.VITE_S3_BUCKET_NAME;
-
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 interface UploadProgressEvent {
@@ -16,7 +12,7 @@ export const uploadFileToS3 = async (file: File, onProgress: (progress: number) 
     // 1. Get presigned URL from backend
     const response = await axios.post(`${BACKEND_API_URL}/upload`, {
       fileName: (file as any).webkitRelativePath || file.name,
-      contentType: file.type,
+      contentType: file.type || file.name.split('.').pop(),
     });
     const { presignedUrl } = response.data;
 
