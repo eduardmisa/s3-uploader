@@ -292,7 +292,8 @@ const convertUrlsToTree = (urls: string[]): TreeNode[] => {
   const tree: TreeNode[] = [];
 
   urls.forEach(url => {
-    const pathParts = url.split('https://emisa-pub-pictures-dev.s3.ap-southeast-1.amazonaws.com/')[1].split('/');
+    const s3BaseUrl = process.env.NEXT_PUBLIC_S3_BUCKET_URL;
+    const pathParts = url.split(`${s3BaseUrl}/`)[1].split('/');
     let currentLevel = tree;
 
     pathParts.forEach((part, index) => {

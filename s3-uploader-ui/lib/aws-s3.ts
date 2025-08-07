@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// TODO: change this to ENV
-const BACKEND_API_URL = "https://api-s3.emisa.me/dev";
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 interface UploadProgressEvent {
   loaded: number;
