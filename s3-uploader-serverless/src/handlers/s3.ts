@@ -1,8 +1,8 @@
-import { S3Client, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, PutObjectCommand, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { APIGatewayProxyHandler } from 'aws-lambda';
 
-const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const s3Client = new S3Client({ region: process.env.DEPLOY_REGION });
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
@@ -53,30 +53,18 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
 
 export const listFiles: APIGatewayProxyHandler = async (event) => {
   try {
-    const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit) : 10; // Default to 10
-    const continuationToken = event.queryStringParameters?.continuationToken || undefined;
-
-    const command = new ListObjectsV2Command({
+    const command: ListObjectsV2Command = new ListObjectsV2Command({
       Bucket: S3_BUCKET_NAME,
-      MaxKeys: limit,
-      ContinuationToken: continuationToken,
     });
 
-    const { Contents, NextContinuationToken } = await s3Client.send(command);
-
-    const fileUrls: string[] = [];
-    if (Contents) {
-      Contents.forEach(object => {
-        if (object.Key) {
-          const fileUrl = `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${object.Key}`;
-          fileUrls.push(fileUrl);
-        }
-      });
-    }
+    const response: ListObjectsV2CommandOutput = await s3Client.send(command);
+    const fileUrls = (response.Contents || [])
+      .filter(object => object.Key && !object.Key.endsWith('/')) // Exclude directories
+      .map(object => `https://${S3_BUCKET_NAME}.s3.${process.env.DEPLOY_REGION}.amazonaws.com/${object.Key}`);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ fileUrls, nextContinuationToken: NextContinuationToken }),
+      body: JSON.stringify({ fileUrls }),
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,

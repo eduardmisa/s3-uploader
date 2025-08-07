@@ -109,7 +109,7 @@ The deployment process automatically:
 
 ### Environment Variables
 The following environment variables are used:
--   `AWS_REGION`: The AWS region where the Lambda functions are deployed.
+-   `DEPLOY_REGION`: The AWS region where the Lambda functions are deployed.
 -   `S3_BUCKET_NAME`: The name of the S3 bucket for uploads and listings (e.g., `emisa-pub-pictures`).
 
 ### Utility Functions
