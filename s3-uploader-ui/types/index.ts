@@ -8,7 +8,7 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 export type FileUploadState = {
   id: string;
   file: File;
-  status: 'queued' | 'uploading' | 'uploaded' | 'failed' | 'skipped';
+  status: "queued" | "uploading" | "uploaded" | "failed" | "skipped";
   progress: number;
   // s3Location?: string; // Removed as frontend no longer constructs this
   error?: string;

@@ -11,7 +11,7 @@ export const siteConfig = {
     {
       label: "Upload",
       href: "/upload",
-    }
+    },
   ],
   navMenuItems: [
     {
@@ -21,7 +21,7 @@ export const siteConfig = {
     {
       label: "Upload",
       href: "/upload",
-    }
+    },
   ],
   links: {
     github: "https://github.com/eduardmisa",
