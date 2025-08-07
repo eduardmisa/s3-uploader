@@ -4,7 +4,7 @@ package-lock.json
 
 # Serverless
 .serverless/
-.env
+# .env
 
 # IDE
 .idea/
@@ -31,5 +31,5 @@ build/
 coverage/
 
 # Environment variables
-.env*
+# .env*
 !.env.example

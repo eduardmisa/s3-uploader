@@ -2,11 +2,13 @@ import { S3Client, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/clien
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { APIGatewayProxyHandler } from 'aws-lambda';
 
-const s3Client = new S3Client({ region: process.env.AWS_REGION }) || "ap-southeast-1";
-const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || "emisa-pub-pictures"; // Use environment variable for bucket name
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
   try {
+    console.log("process.env.S3_BUCKET_NAME ->", process.env.S3_BUCKET_NAME);
+
     const { fileName, contentType } = JSON.parse(event.body || '{}');
 
     if (!fileName || !contentType) {

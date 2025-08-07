@@ -3,7 +3,7 @@ service: s3-uploader-backend
 provider:
   name: aws
   runtime: nodejs18.x
-  region: ap-southeast-1
+  region: ${env:DEPLOY_REGION}
   apiGateway:
     usagePlan:
       quota:
@@ -21,6 +21,11 @@ provider:
       Resource:
         - "arn:aws:s3:::emisa-pub-pictures"
         - "arn:aws:s3:::emisa-pub-pictures/*"
+        - "arn:aws:s3:::emisa-pub-pictures-dev"
+        - "arn:aws:s3:::emisa-pub-pictures-dev/*"
+  environment:
+    DEPLOY_REGION: ${env:DEPLOY_REGION}
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
 
 build:
   esbuild:
