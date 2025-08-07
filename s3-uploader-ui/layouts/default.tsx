@@ -24,7 +24,7 @@ export default function DefaultLayout({
           title="github.com eduardmisa"
         >
           <span className="text-default-600">Powered by</span>
-          <p className="text-primary">Eduard Misa</p>
+          <p className="text-primary">No one</p>
         </Link>
       </footer>
     </div>

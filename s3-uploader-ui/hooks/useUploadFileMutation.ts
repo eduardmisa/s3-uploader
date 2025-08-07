@@ -6,12 +6,12 @@ interface UploadMutationVariables {
   onProgress: (progress: number) => void;
 }
 
-export const useUploadFileMutation = () => {
+export const useUploadFileMutation = (filePathPrefix?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ file, onProgress }: UploadMutationVariables) => {
-      return uploadFileToS3(file, onProgress);
+      return uploadFileToS3(file, onProgress, filePathPrefix);
     },
     onSuccess: () => {
       // Invalidate and refetch the S3 files query after a successful upload

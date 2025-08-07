@@ -9,7 +9,9 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
   try {
     console.log("process.env.S3_BUCKET_NAME ->", process.env.S3_BUCKET_NAME);
 
-    const { fileName, contentType } = JSON.parse(event.body || '{}');
+    const { fileName, contentType, filePathPrefix } = JSON.parse(event.body || '{}');
+
+    console.log("Request Body ->", { fileName, contentType, filePathPrefix });
 
     if (!fileName || !contentType) {
       return {
@@ -24,7 +26,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
 
     const command = new PutObjectCommand({
       Bucket: S3_BUCKET_NAME,
-      Key: fileName,
+      Key: filePathPrefix ? `${filePathPrefix}/${fileName}` : fileName,
       ContentType: contentType,
     });
 
@@ -51,7 +53,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
   }
 };
 
-export const listFiles: APIGatewayProxyHandler = async (event) => {
+export const listFiles: APIGatewayProxyHandler = async () => {
   try {
     const command: ListObjectsV2Command = new ListObjectsV2Command({
       Bucket: S3_BUCKET_NAME,

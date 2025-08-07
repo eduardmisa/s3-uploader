@@ -8,12 +8,13 @@ interface UploadProgressEvent {
   total: number;
 }
 
-export const uploadFileToS3 = async (file: File, onProgress: (progress: number) => void): Promise<any> => {
+export const uploadFileToS3 = async (file: File, onProgress: (progress: number) => void, filePathPrefix?: string): Promise<any> => {
   try {
     // 1. Get presigned URL from backend
     const response = await axios.post(`${BACKEND_API_URL}/upload`, {
       fileName: (file as any).webkitRelativePath || file.name,
       contentType: file.type || file.name.split('.').pop(),
+      filePathPrefix
     });
     const { presignedUrl } = response.data;
 

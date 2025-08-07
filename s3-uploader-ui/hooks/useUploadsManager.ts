@@ -6,10 +6,11 @@ interface UseUploadsManagerProps {
   filesToUpload: FileUploadState[];
   setFilesToUpload: React.Dispatch<React.SetStateAction<FileUploadState[]>>;
   setUploadedFileNames: React.Dispatch<React.SetStateAction<string[]>>;
+  filePathPrefix?: string;
 }
 
-export const useUploadsManager = ({ filesToUpload, setFilesToUpload, setUploadedFileNames }: UseUploadsManagerProps) => {
-  const { mutateAsync } = useUploadFileMutation();
+export const useUploadsManager = ({ filesToUpload, setFilesToUpload, setUploadedFileNames, filePathPrefix }: UseUploadsManagerProps) => {
+  const { mutateAsync } = useUploadFileMutation(filePathPrefix);
   const [activeUploadsCount, setActiveUploadsCount] = useState(0);
   const CONCURRENCY_LIMIT = 3;
 

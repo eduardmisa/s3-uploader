@@ -17,9 +17,10 @@ const DEFAULT_IMAGE = '/file-image.png'; // Default image for previews
 export default function BrowsePage() {
   const [filesToUpload, setFilesToUpload] = useState<FileUploadState[]>([]);
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>(() => {
-    // Initialize from local storage
-    const stored = localStorage.getItem('uploadedFileNames');
-    return stored ? JSON.parse(stored) : [];
+    // // Initialize from local storage
+    // const stored = localStorage.getItem('uploadedFileNames');
+    // return stored ? JSON.parse(stored) : [];
+    return [];
   });
   const [overrideExistingFiles, setOverrideExistingFiles] = useState(false); // New state for override option
 
@@ -77,12 +78,6 @@ export default function BrowsePage() {
         preview: isImage ? URL.createObjectURL(file) : undefined, // Generate preview for images
       };
     });
-
-    // Inform user about skipped files (removed alert, now handled by UI list)
-    // const skipped = newFiles.filter(f => f.status === 'skipped');
-    // if (skipped.length > 0) {
-    //   alert(`Skipped ${skipped.length} files that were already uploaded (use "Override existing files" to re-upload): ${skipped.map(f => f.file.name).join(', ')}`);
-    // }
 
     setFilesToUpload(prev => {
       // Filter out duplicates based on ID before adding

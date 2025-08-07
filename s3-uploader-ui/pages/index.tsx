@@ -1,58 +1,64 @@
-import { Link } from "@heroui/link";
-import { Snippet } from "@heroui/snippet";
-import { Code } from "@heroui/code";
-import { button as buttonStyles } from "@heroui/theme";
-
-import { siteConfig } from "@/config/site";
-import { title, subtitle } from "@/components/primitives";
-import { GithubIcon } from "@/components/icons";
+import { title } from "@/components/primitives";
 import DefaultLayout from "@/layouts/default";
+import { listFilesFromS3, ListFilesResult } from "@/lib/aws-s3";
+import { Button } from "@heroui/button";
+import { Card, CardFooter } from "@heroui/card";
+import { Image } from "@heroui/image";
+import { Tooltip } from "@heroui/tooltip";
+import { useQuery } from "@tanstack/react-query";
 
 export default function IndexPage() {
+  const { data: s3FileData } = useQuery<ListFilesResult>({
+    queryKey: ['s3Files'],
+    queryFn: () => listFilesFromS3()
+  });
+
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="inline-block max-w-xl text-center justify-center">
-          <span className={title()}>Make&nbsp;</span>
-          <span className={title({ color: "violet" })}>beautiful&nbsp;</span>
+          <span className={title()}>Here are your recently&nbsp;</span>
+          <span className={title({ color: "violet" })}>uploaded&nbsp;</span>
           <br />
           <span className={title()}>
-            websites regardless of your design experience.
+            files.
           </span>
-          <div className={subtitle({ class: "mt-4" })}>
-            Beautiful, fast and modern React UI library.
-          </div>
         </div>
-
-        <div className="flex gap-3">
-          <Link
-            isExternal
-            className={buttonStyles({
-              color: "primary",
-              radius: "full",
-              variant: "shadow",
-            })}
-            href={siteConfig.links.docs}
-          >
-            Documentation
-          </Link>
-          <Link
-            isExternal
-            className={buttonStyles({ variant: "bordered", radius: "full" })}
-            href={siteConfig.links.github}
-          >
-            <GithubIcon size={20} />
-            GitHub
-          </Link>
-        </div>
-
-        <div className="mt-8">
-          <Snippet hideCopyButton hideSymbol variant="bordered">
-            <span>
-              Get started by editing{" "}
-              <Code color="primary">pages/index.tsx</Code>
-            </span>
-          </Snippet>
+      </section>
+      <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
+        <div className="flex flex-wrap gap-4 justify-center">
+          {s3FileData?.fileUrls.map((url, index) => {
+            const name = url.split('/').pop() || 'Unknown'
+            return (
+              <Card
+                isFooterBlurred
+                className="border-none radius-lg transition-transform duration-200 hover:scale-105"
+                key={`${index}-${name}`}
+                style={{ width: "200px" }}
+              >
+                <Image
+                  alt={`S3 Image ${name}`}
+                  className="object-cover"
+                  height={200}
+                  src={url}
+                />
+                <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+                  <Tooltip content={name} showArrow={true}>
+                    <Button
+                      className="text-tiny text-white bg-black/20"
+                      color="default"
+                      radius="lg"
+                      size="sm"
+                      variant="light"
+                      fullWidth
+                    >
+                      {name}
+                    </Button>
+                  </Tooltip>
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
       </section>
     </DefaultLayout>
