@@ -213,7 +213,7 @@ export default function UploadPage() {
 
   return (
     <DefaultLayout>
-      <section className="flex flex-row items-start justify-center gap-4 py-8 md:py-10">
+      <section className="flex flex-row items-start justify-center gap-4 py-8 md:py-10 flex-wrap-reverse">
         <Listbox
           aria-label="Folders Menu"
           className="p-0 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 max-w-[300px] overflow-visible shadow-small rounded-medium"
