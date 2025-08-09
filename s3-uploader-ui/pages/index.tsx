@@ -51,6 +51,7 @@ export default function IndexPage() {
                       radius="lg"
                       size="sm"
                       variant="light"
+                      onPress={() => window.open(url, "_blank")}
                     >
                       {name}
                     </Button>
