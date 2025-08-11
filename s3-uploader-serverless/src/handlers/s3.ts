@@ -66,13 +66,16 @@ export const listFiles: APIGatewayProxyHandler = async () => {
     const baseUrl = CLOUDFRONT_DOMAIN
       ? `https://${CLOUDFRONT_DOMAIN}`
       : `https://${S3_BUCKET_NAME}.s3.${process.env.DEPLOY_REGION}.amazonaws.com`;
-    const fileUrls = (response.Contents || [])
+    const allFileUrls = (response.Contents || [])
       .filter(object => object.Key && !object.Key.endsWith('/')) // Exclude directories
       .map(object => `${baseUrl}/${object.Key}`);
 
+    const fileUrls = allFileUrls.filter(url => !url.includes("-thumbnail."))
+    const imageThumbnailsUrls = allFileUrls.filter(url => url.includes("-thumbnail."))
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ fileUrls }),
+      body: JSON.stringify({ fileUrls, imageThumbnailsUrls }),
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
@@ -204,7 +207,7 @@ export const generateThumbnails: APIGatewayProxyHandler = async (event) => {
     // Normalize input to keys and filter invalid entries
     const requestedKeys = inputList
       .map((v: string) => parseKeyFromUrl(String(v).trim()))
-      .filter((k: string) => k && !k.endsWith('/') );
+      .filter((k: string) => k && !k.endsWith('/'));
 
     if (requestedKeys.length === 0) {
       return {
