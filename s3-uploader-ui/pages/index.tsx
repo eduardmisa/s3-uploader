@@ -13,8 +13,7 @@ export default function IndexPage() {
   const { currentFolderImages, pathHistory } = useSideNavBar();
 
   const CardImage: React.FC<{ data: string; }> = useCallback(({ data }) => {
-    if (!currentFolderImages || currentFolderImages.length <= 0 || !data)
-      return <></>
+    if (!data) return <></>;
 
     const url = data;
     const name = url.split("/").pop() || "Unknown";
@@ -49,7 +48,9 @@ export default function IndexPage() {
         </CardFooter>
       </Card>
     );
-  }, [currentFolderImages])
+  }, [])
+
+  const items = useMemo(() => currentFolderImages || [], [currentFolderImages]);
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [columnCount, setColumnCount] = React.useState<number>(1);
@@ -88,7 +89,7 @@ export default function IndexPage() {
             useWindowScroll
             columnCount={columnCount}
             initialItemCount={20}
-            data={currentFolderImages || []}
+            data={items}
             ItemContent={CardImage}
             className="w-full!"
           />
