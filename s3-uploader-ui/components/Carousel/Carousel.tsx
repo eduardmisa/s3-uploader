@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import ImageGallery from "react-image-gallery";
+
+import { getThumbnailUrl } from "@/utils/urlUtil";
 import "react-image-gallery/styles/css/image-gallery.css";
 
 interface ICarousel {
@@ -11,8 +13,8 @@ export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
   const items = useMemo(
     () =>
       urls.map((url) => ({
-        original: url.replace("-thumbnail.", "."),
-        thumbnail: url,
+        original: url,
+        thumbnail: getThumbnailUrl(url),
       })),
     [urls],
   );
