@@ -24,7 +24,13 @@ import { Image } from "@heroui/image";
 import { Input } from "@heroui/input";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/progress";
-
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter
+} from "@heroui/drawer";
 import { Dropzone } from "@/components/Dropzone";
 import { FileUploadState } from "@/types";
 import { useUploadsManager } from "@/hooks/useUploadsManager";
@@ -214,47 +220,68 @@ export default function UploadPage() {
   return (
     <DefaultLayout>
       <section className="flex flex-row items-start justify-center gap-4 py-8 md:py-10 flex-wrap-reverse">
-        <Listbox
-          aria-label="Folders Menu"
-          className="p-0 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 max-w-[300px] overflow-visible shadow-small rounded-medium"
-          color="success"
-          itemClasses={{
-            base: "px-3 first:rounded-t-medium last:rounded-b-medium rounded-none gap-3 h-12 data-[hover=true]:bg-default-100/80",
-          }}
-          variant="flat"
-          onAction={handleAction}
+        <Drawer
+          isOpen={true}
+          onOpenChange={() => { return; }}
+          placement="left"
+          backdrop="transparent"
+          hideCloseButton
+          radius="none"
+          portalContainer={undefined}
+          size="xs"
+          isKeyboardDismissDisabled
         >
-          <ListboxItem
-            key={"ROOT"}
-            isReadOnly
-            showDivider
-            className="text-center h-auto"
-            endContent={
-              <Button
-                isIconOnly
-                size="lg"
-                variant="flat"
-                onPress={() => handleAction("ROOT")}
-              >
-                <HomeIcon />
-              </Button>
-            }
-            startContent={
-              <Button isIconOnly size="lg" variant="flat" onPress={handleBack}>
-                <ChevronLeft />
-              </Button>
-            }
-          >
-            {pathHistory[pathHistory.length - 1] || "ROOT"}
-          </ListboxItem>
+          <DrawerContent>
+            {(onClose) => (
+              <>
+                <DrawerHeader className="flex flex-col gap-1">Folder Explorer</DrawerHeader>
+                <DrawerBody>
+                  <Listbox
+                    aria-label="Folders Menu"
+                    className="p-0 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 max-w-[300px] overflow-visible shadow-small rounded-medium"
+                    color="success"
+                    itemClasses={{
+                      base: "px-3 first:rounded-t-medium last:rounded-b-medium rounded-none gap-3 h-12 data-[hover=true]:bg-default-100/80",
+                    }}
+                    variant="flat"
+                    onAction={handleAction}
+                  >
+                    <ListboxItem
+                      key={"ROOT"}
+                      isReadOnly
+                      showDivider
+                      className="text-center h-auto"
+                      endContent={
+                        <Button
+                          isIconOnly
+                          size="lg"
+                          variant="flat"
+                          onPress={() => handleAction("ROOT")}
+                        >
+                          <HomeIcon />
+                        </Button>
+                      }
+                      startContent={
+                        <Button isIconOnly size="lg" variant="flat" onPress={handleBack}>
+                          <ChevronLeft />
+                        </Button>
+                      }
+                    >
+                      {pathHistory[pathHistory.length - 1] || "ROOT"}
+                    </ListboxItem>
 
-          {renderNodes()}
+                    {renderNodes()}
 
-          <ListboxItem key="CreateFolder" className="text-center h-auto">
-            Create folder
-            <PlusCircleIcon className="inline mb-1 ml-1" size={17} />
-          </ListboxItem>
-        </Listbox>
+                    <ListboxItem key="CreateFolder" className="text-center h-auto">
+                      Create folder
+                      <PlusCircleIcon className="inline mb-1 ml-1" size={17} />
+                    </ListboxItem>
+                  </Listbox>
+                </DrawerBody>
+              </>
+            )}
+          </DrawerContent>
+        </Drawer>
 
         <Card className="py-4">
           <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">

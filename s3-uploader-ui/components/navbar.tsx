@@ -16,7 +16,9 @@ import clsx from "clsx";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { GithubIcon, SearchIcon, Logo } from "@/components/icons";
+import { GithubIcon, SearchIcon } from "@/components/icons";
+import { Button } from "@heroui/button";
+import { FolderTree } from "lucide-react";
 
 export const Navbar = () => {
   const searchInput = (
@@ -43,9 +45,11 @@ export const Navbar = () => {
   return (
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+        <Button isIconOnly variant="light">
+          <FolderTree />
+        </Button>
         <NavbarBrand className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo />
             <p className="font-bold text-inherit">File Manager</p>
           </NextLink>
         </NavbarBrand>

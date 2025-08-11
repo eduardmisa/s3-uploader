@@ -15,6 +15,7 @@
     "@heroui/card": "^2.2.23",
     "@heroui/checkbox": "^2.3.24",
     "@heroui/code": "2.2.18",
+    "@heroui/drawer": "^2.2.21",
     "@heroui/image": "^2.2.15",
     "@heroui/input": "2.4.25",
     "@heroui/kbd": "2.2.19",
