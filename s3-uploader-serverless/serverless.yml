@@ -59,6 +59,15 @@ functions:
           cors:
             origin: "*"
 
+  generateThumbnails:
+    handler: src/handlers/s3.generateThumbnails
+    events:
+      - http:
+          path: thumbnails/generate
+          method: post
+          cors:
+            origin: "*"
+
 resources:
   Resources:
     # No resources needed for this simplified backend

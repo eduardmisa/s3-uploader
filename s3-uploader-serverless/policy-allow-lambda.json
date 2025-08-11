@@ -1,0 +1,58 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowUploadFromSpecificIPs",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::emisa-pub-pictures/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-acl": "bucket-owner-full-control"
+        },
+        "IpAddress": {
+          "aws:SourceIp": [
+            "202.166.50.240/32",
+            "122.11.245.8/32",
+            "116.15.193.251/32",
+            "122.11.212.141/32"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "DenyUploadFromOtherIPsExceptLambda",
+      "Effect": "Deny",
+      "NotPrincipal": {
+        "AWS": "arn:aws:iam::048966230029:role/s3-uploader-backend-prod-ap-southeast-1-lambdaRole"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::emisa-pub-pictures/*",
+      "Condition": {
+        "NotIpAddress": {
+          "aws:SourceIp": [
+            "202.166.50.240/32",
+            "122.11.245.8/32",
+            "116.15.193.251/32",
+            "122.11.212.141/32"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "AllowCloudFrontServicePrincipal",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::emisa-pub-pictures/*",
+      "Condition": {
+        "ArnLike": {
+          "AWS:SourceArn": "arn:aws:cloudfront::048966230029:distribution/EN4XVDAIXDCB5"
+        }
+      }
+    }
+  ]
+}
