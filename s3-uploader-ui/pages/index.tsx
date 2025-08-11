@@ -3,14 +3,24 @@ import { Card, CardFooter } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Tooltip } from "@heroui/tooltip";
 import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { Modal, ModalContent, ModalBody, useDisclosure } from "@heroui/modal";
 
 import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
 import { useSideNavBar } from "@/hooks/useSideNav";
+import { Carousel } from "@/components/Carousel";
 
 export default function IndexPage() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const { currentFolderImages, pathHistory } = useSideNavBar();
+
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const onImageClick = (url: string) => {
+    setSelectedImageUrl(url);
+    onOpen();
+  };
 
   const CardImage: React.FC<{ data: string }> = useCallback(({ data }) => {
     if (!data) return <></>;
@@ -29,7 +39,7 @@ export default function IndexPage() {
           className="object-cover"
           height={200}
           src={url}
-          onClick={() => window.open(url, "_blank")}
+          onClick={() => onImageClick(url)}
         />
         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
           <Tooltip content={name} showArrow={true}>
@@ -40,7 +50,7 @@ export default function IndexPage() {
               radius="lg"
               size="sm"
               variant="light"
-              onPress={() => window.open(url, "_blank")}
+              onPress={() => onImageClick(url)}
             >
               {name}
             </Button>
@@ -108,6 +118,23 @@ export default function IndexPage() {
           />
         </div>
       </section>
+
+      <Modal
+        backdrop={"transparent"}
+        isOpen={isOpen}
+        size="full"
+        onClose={onClose}
+      >
+        <ModalContent className="flex w-full items-center justify-center">
+          {() => (
+            <>
+              <ModalBody className="flex w-full">
+                <Carousel selectedUrl={selectedImageUrl} urls={items} />
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </DefaultLayout>
   );
 }
