@@ -2,17 +2,17 @@ import { Button } from "@heroui/button";
 import { Card, CardFooter } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Tooltip } from "@heroui/tooltip";
+import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
+import React, { useCallback, useMemo } from "react";
 
 import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
-import { VirtuosoMasonry } from '@virtuoso.dev/masonry'
-import React, { useCallback, useMemo } from "react";
 import { useSideNavBar } from "@/hooks/useSideNav";
 
 export default function IndexPage() {
   const { currentFolderImages, pathHistory } = useSideNavBar();
 
-  const CardImage: React.FC<{ data: string; }> = useCallback(({ data }) => {
+  const CardImage: React.FC<{ data: string }> = useCallback(({ data }) => {
     if (!data) return <></>;
 
     const url = data;
@@ -48,28 +48,34 @@ export default function IndexPage() {
         </CardFooter>
       </Card>
     );
-  }, [])
+  }, []);
 
   const items = useMemo(() => currentFolderImages || [], [currentFolderImages]);
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [columnCount, setColumnCount] = React.useState<number>(1);
+
   React.useLayoutEffect(() => {
     const el = containerRef.current;
+
     if (!el) return;
     const itemWidth = 212; // approximate card width (200px) + gaps/margins
     const update = (width: number) => {
       const cols = Math.max(1, Math.floor(width / itemWidth));
+
       setColumnCount(cols);
     };
+
     // initial measurement
     update(el.clientWidth);
-    const ro = new ResizeObserver(entries => {
+    const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         update(entry.contentRect.width);
       }
     });
+
     ro.observe(el);
+
     return () => ro.disconnect();
   }, []);
 
@@ -78,20 +84,27 @@ export default function IndexPage() {
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="inline-block max-w-xl text-center justify-center">
           <span className={title()}>Here are your files in&nbsp;</span>
-          <span className={title({ color: "violet" })}>{pathHistory[pathHistory.length - 1] || "All"}&nbsp;</span>
+          <span className={title({ color: "violet" })}>
+            {pathHistory[pathHistory.length - 1] || "All"}&nbsp;
+          </span>
           <br />
-          <span className={title()}>folder. ({currentFolderImages?.length || 0})</span>
+          <span className={title()}>
+            folder. ({currentFolderImages?.length || 0})
+          </span>
         </div>
       </section>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-        <div ref={containerRef} className="flex flex-wrap gap-4 justify-center w-full">
+        <div
+          ref={containerRef}
+          className="flex flex-wrap gap-4 justify-center w-full"
+        >
           <VirtuosoMasonry
             useWindowScroll
-            columnCount={columnCount}
-            initialItemCount={20}
-            data={items}
             ItemContent={CardImage}
             className="w-full!"
+            columnCount={columnCount}
+            data={items}
+            initialItemCount={20}
           />
         </div>
       </section>

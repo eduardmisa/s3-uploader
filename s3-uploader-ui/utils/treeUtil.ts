@@ -5,15 +5,22 @@ export const collectUrls = (nodes?: TreeNode[]): string[] => {
   if (!nodes || nodes.length === 0) return [];
   const urls: string[] = [];
   const stack: TreeNode[] = [...nodes];
+
   while (stack.length) {
     const node = stack.shift()!;
+
     if (!node) continue;
     if (node.type === "file" && node.url) {
       urls.push(node.url);
-    } else if (node.type === "folder" && node.children && node.children.length > 0) {
+    } else if (
+      node.type === "folder" &&
+      node.children &&
+      node.children.length > 0
+    ) {
       stack.push(...node.children);
     }
   }
+
   return urls;
 };
 
@@ -41,12 +48,15 @@ export const convertUrlsToTree = (urls: string[]): TreeNode[] => {
     // Derive the key/path from the full URL without relying on any env var.
     // Prefer using the URL API to extract the pathname (works for both S3 and CloudFront domains).
     let pathParts: string[] = [];
+
     try {
       const parsed = new URL(url);
+
       pathParts = parsed.pathname.replace(/^\/+/, "").split("/");
     } catch {
       // Fallback: strip protocol + domain if URL parsing fails
       const withoutDomain = url.replace(/^[^:]+:\/\/[^/]+\/?/, "");
+
       pathParts = withoutDomain.split("/");
     }
     let currentLevel = tree;

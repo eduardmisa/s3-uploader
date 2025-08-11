@@ -48,7 +48,7 @@ export default function BrowsePage() {
     string | undefined
   >({
     queryKey: ["s3Files"],
-    queryFn: ({ pageParam }) => listFilesFromS3(),
+    queryFn: () => listFilesFromS3(),
     initialPageParam: undefined, // Start with no continuation token
     getNextPageParam: (lastPage: ListFilesResult) =>
       lastPage.nextContinuationToken, // Explicitly type lastPage
@@ -552,7 +552,7 @@ export default function BrowsePage() {
                     <Flex gap="2" justify="center" wrap="wrap">
                       {s3FileData.pages
                         .flatMap((page) =>
-                          page.fileUrls.map((url, i) => ({
+                          page.fileUrls.map((url) => ({
                             url,
                             name: url.split("/").pop() || "Unknown",
                           })),
@@ -622,7 +622,7 @@ export default function BrowsePage() {
   );
 }
 
-const Section = ({ children, ...props }: any) => <div>{children}</div>;
+const Section = ({ children }: any) => <div>{children}</div>;
 const Flex = ({ children }: any) => <div>{children}</div>;
 const Container = ({ children }: any) => <div>{children}</div>;
 const Box = ({ children }: any) => <div>{children}</div>;

@@ -7,19 +7,18 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@heroui/navbar";
-import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
-import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
+import { Button } from "@heroui/button";
+import { FolderTree } from "lucide-react";
+
+import { SideNavBar } from "./side-nav-bar";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { GithubIcon, SearchIcon } from "@/components/icons";
-import { Button } from "@heroui/button";
-import { FolderTree } from "lucide-react";
-import { SideNavBar } from "./side-nav-bar";
+import { GithubIcon } from "@/components/icons";
 import { useSideNavBar } from "@/hooks/useSideNav";
 
 export const Navbar = () => {
@@ -102,11 +101,7 @@ export const Navbar = () => {
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                color={"primary"}
-                href={item.href}
-                size="lg"
-              >
+              <Link color={"primary"} href={item.href} size="lg">
                 {item.label}
               </Link>
             </NavbarMenuItem>
@@ -116,4 +111,3 @@ export const Navbar = () => {
     </HeroUINavbar>
   );
 };
-

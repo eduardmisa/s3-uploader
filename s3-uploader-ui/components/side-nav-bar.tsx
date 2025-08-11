@@ -1,15 +1,35 @@
-import { useSideNavBar } from "@/hooks/useSideNav";
-import { ListFilesResult, listFilesFromS3 } from "@/lib/aws-s3";
-import { TreeNode } from "@/types";
-import { convertUrlsToTree, findNodeInTree } from "@/utils/treeUtil";
 import { Button } from "@heroui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerBody } from "@heroui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+} from "@heroui/drawer";
 import { Input } from "@heroui/input";
 import { ListboxItem, Listbox } from "@heroui/listbox";
-import { useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import {
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/modal";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, FolderIcon, FileImageIcon, HomeIcon, ChevronLeft, PlusCircleIcon } from "lucide-react";
+import {
+  ChevronRight,
+  FolderIcon,
+  FileImageIcon,
+  HomeIcon,
+  ChevronLeft,
+  PlusCircleIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { convertUrlsToTree, findNodeInTree } from "@/utils/treeUtil";
+import { TreeNode } from "@/types";
+import { ListFilesResult, listFilesFromS3 } from "@/lib/aws-s3";
+import { useSideNavBar } from "@/hooks/useSideNav";
 
 export const SideNavBar = () => {
   const {
@@ -17,28 +37,33 @@ export const SideNavBar = () => {
     toggleSideNav,
 
     setCurrentFolder: setCurrentFolderContext,
-    setPathHistory: setPathHistoryContext
+    setPathHistory: setPathHistoryContext,
   } = useSideNavBar();
 
   const { data: s3FileData } = useQuery<ListFilesResult>({
     queryKey: ["s3Files"],
     queryFn: () => listFilesFromS3(),
   });
+
   useEffect(() => {
-    handleAction("ROOT")
-  }, [s3FileData])
+    handleAction("ROOT");
+  }, [s3FileData]);
 
   const treeData = convertUrlsToTree(s3FileData?.fileUrls || []);
 
-  const [currentFolder, setCurrentFolder] = useState<TreeNode[]>(() => { return treeData; });
+  const [currentFolder, setCurrentFolder] = useState<TreeNode[]>(() => {
+    return treeData;
+  });
+
   useEffect(() => {
     setCurrentFolderContext(currentFolder);
-  }, [currentFolder])
+  }, [currentFolder]);
 
   const [pathHistory, setPathHistory] = useState<string[]>([]);
+
   useEffect(() => {
     setPathHistoryContext(pathHistory);
-  }, [pathHistory])
+  }, [pathHistory]);
 
   const [newFolderName, setNewFolderName] = useState("");
 
@@ -116,19 +141,21 @@ export const SideNavBar = () => {
     <>
       {/* SIDE NAV DRAWER */}
       <Drawer
-        isOpen={isSideNavOpen}
-        onOpenChange={() => toggleSideNav()}
-        placement="left"
-        backdrop="transparent"
-        radius="none"
-        portalContainer={undefined}
-        size="xs"
         isKeyboardDismissDisabled
+        backdrop="transparent"
+        isOpen={isSideNavOpen}
+        placement="left"
+        portalContainer={undefined}
+        radius="none"
+        size="xs"
+        onOpenChange={() => toggleSideNav()}
       >
         <DrawerContent>
-          {(onClose) => (
+          {() => (
             <>
-              <DrawerHeader className="flex flex-col gap-1">Folder Explorer</DrawerHeader>
+              <DrawerHeader className="flex flex-col gap-1">
+                Folder Explorer
+              </DrawerHeader>
               <DrawerBody>
                 <Listbox
                   aria-label="Folders Menu"
@@ -156,7 +183,12 @@ export const SideNavBar = () => {
                       </Button>
                     }
                     startContent={
-                      <Button isIconOnly size="lg" variant="flat" onPress={handleBack}>
+                      <Button
+                        isIconOnly
+                        size="lg"
+                        variant="flat"
+                        onPress={handleBack}
+                      >
                         <ChevronLeft />
                       </Button>
                     }
@@ -166,7 +198,10 @@ export const SideNavBar = () => {
 
                   {renderNodes()}
 
-                  <ListboxItem key="CreateFolder" className="text-center h-auto">
+                  <ListboxItem
+                    key="CreateFolder"
+                    className="text-center h-auto"
+                  >
                     Create folder
                     <PlusCircleIcon className="inline mb-1 ml-1" size={17} />
                   </ListboxItem>
@@ -175,7 +210,7 @@ export const SideNavBar = () => {
             </>
           )}
         </DrawerContent>
-      </Drawer >
+      </Drawer>
 
       <Modal backdrop={"transparent"} isOpen={isOpen} onClose={onClose}>
         <ModalContent>
@@ -210,4 +245,4 @@ export const SideNavBar = () => {
       </Modal>
     </>
   );
-}
+};

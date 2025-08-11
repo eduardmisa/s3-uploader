@@ -1,17 +1,16 @@
-
 import React, { useState } from "react";
-import DefaultLayout from "@/layouts/default";
 import { Button } from "@heroui/button";
 import { cn } from "@heroui/theme";
 import { UploadIcon } from "lucide-react";
 import { Image } from "@heroui/image";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/progress";
+
+import DefaultLayout from "@/layouts/default";
 import { Dropzone } from "@/components/Dropzone";
 import { FileUploadState } from "@/types";
 import { useUploadsManager } from "@/hooks/useUploadsManager";
 import { useSideNavBar } from "@/hooks/useSideNav";
-
 
 export default function UploadPage() {
   const { pathHistory } = useSideNavBar();
@@ -61,7 +60,7 @@ export default function UploadPage() {
   const uploading = filesToUpload.filter((f) => f.status === "uploading");
   const uploaded = filesToUpload.filter((f) => f.status === "uploaded");
   const failed = filesToUpload.filter((f) => f.status === "failed");
-  const skipped = filesToUpload.filter((f) => f.status === "skipped");
+  // const skipped = filesToUpload.filter((f) => f.status === "skipped");
 
   const canUpload = uploading.length === 0 && queued.length > 0;
 
