@@ -30,7 +30,7 @@ export default function IndexPage() {
     return (
       <Card
         isFooterBlurred
-        className="border-none radius-lg transition-transform duration-200 hover:scale-105 m-1"
+        className="border-none radius-lg transition-transform duration-200 hover:scale-105 mx-auto! my-3"
         style={{ width: "200px" }}
       >
         <Image
@@ -59,6 +59,28 @@ export default function IndexPage() {
     );
   }
 
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [columnCount, setColumnCount] = React.useState<number>(1);
+
+  React.useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const itemWidth = 212; // approximate card width (200px) + gaps/margins
+    const update = (width: number) => {
+      const cols = Math.max(1, Math.floor(width / itemWidth));
+      setColumnCount(cols);
+    };
+    // initial measurement
+    update(el.clientWidth);
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        update(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
@@ -70,10 +92,10 @@ export default function IndexPage() {
         </div>
       </section>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-        <div className="flex flex-wrap gap-4 justify-center w-full">
+        <div ref={containerRef} className="flex flex-wrap gap-4 justify-center w-full">
           <VirtuosoMasonry
             useWindowScroll
-            columnCount={6}
+            columnCount={columnCount}
             initialItemCount={20}
             data={data}
             ItemContent={CardImage}
