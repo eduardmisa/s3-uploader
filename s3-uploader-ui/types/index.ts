@@ -14,3 +14,10 @@ export type FileUploadState = {
   error?: string;
   preview?: string; // Add preview URL for images
 };
+
+export interface TreeNode {
+  name: string;
+  type: "folder" | "file";
+  url?: string;
+  children?: TreeNode[];
+}

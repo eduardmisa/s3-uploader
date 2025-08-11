@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 
 import { fontSans, fontMono } from "@/config/fonts";
 import "@/styles/globals.css";
+import { SideNavProvider } from "@/hooks/useSideNav";
 
 const queryClient = new QueryClient();
 
@@ -17,7 +18,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider navigate={router.push}>
         <NextThemesProvider attribute="class" defaultTheme="light">
-          <Component {...pageProps} />
+          <SideNavProvider>
+            <Component {...pageProps} />
+          </SideNavProvider>
         </NextThemesProvider>
       </HeroUIProvider>
     </QueryClientProvider>

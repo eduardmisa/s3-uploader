@@ -2,26 +2,18 @@ import { Button } from "@heroui/button";
 import { Card, CardFooter } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Tooltip } from "@heroui/tooltip";
-import { useQuery } from "@tanstack/react-query";
 
-import { listFilesFromS3, ListFilesResult } from "@/lib/aws-s3";
 import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
 import { VirtuosoMasonry } from '@virtuoso.dev/masonry'
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
+import { useSideNavBar } from "@/hooks/useSideNav";
 
 export default function IndexPage() {
-  const { data: s3FileData } = useQuery<ListFilesResult>({
-    queryKey: ["s3Files"],
-    queryFn: () => listFilesFromS3(),
-  });
+  const { currentFolderImages, pathHistory } = useSideNavBar();
 
-  const data = useMemo(() => {
-    return s3FileData?.fileUrls || [];
-  }, [s3FileData])
-
-  const CardImage: React.FC<{ data: string; }> = ({ data }) => {
-    if (!s3FileData || s3FileData.fileUrls.length <= 0)
+  const CardImage: React.FC<{ data: string; }> = useCallback(({ data }) => {
+    if (!currentFolderImages || currentFolderImages.length <= 0 || !data)
       return <></>
 
     const url = data;
@@ -57,11 +49,10 @@ export default function IndexPage() {
         </CardFooter>
       </Card>
     );
-  }
+  }, [currentFolderImages])
 
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [columnCount, setColumnCount] = React.useState<number>(1);
-
   React.useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -85,10 +76,10 @@ export default function IndexPage() {
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="inline-block max-w-xl text-center justify-center">
-          <span className={title()}>Here are your recently&nbsp;</span>
-          <span className={title({ color: "violet" })}>uploaded&nbsp;</span>
+          <span className={title()}>Here are your files in&nbsp;</span>
+          <span className={title({ color: "violet" })}>{pathHistory[pathHistory.length - 1] || "All"}&nbsp;</span>
           <br />
-          <span className={title()}>files.</span>
+          <span className={title()}>folder. ({currentFolderImages?.length || 0})</span>
         </div>
       </section>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
@@ -97,7 +88,7 @@ export default function IndexPage() {
             useWindowScroll
             columnCount={columnCount}
             initialItemCount={20}
-            data={data}
+            data={currentFolderImages || []}
             ItemContent={CardImage}
             className="w-full!"
           />
