@@ -32,8 +32,7 @@ export default function IndexPage() {
     return (
       <Card
         isFooterBlurred
-        className="border-none radius-lg transition-transform duration-200 hover:scale-105 mx-auto! my-3"
-        style={{ width: "200px" }}
+        className="border-none radius-lg transition-transform duration-200 hover:scale-105 mx-auto! my-3 w-[150px] h-[150px]"
       >
         <Image
           alt={`S3 Image ${name}`}
@@ -70,7 +69,7 @@ export default function IndexPage() {
     const el = containerRef.current;
 
     if (!el) return;
-    const itemWidth = 212; // approximate card width (200px) + gaps/margins
+    const itemWidth = 162; // approximate card width (200px) + gaps/margins
     const update = (width: number) => {
       const cols = Math.max(1, Math.floor(width / itemWidth));
 
