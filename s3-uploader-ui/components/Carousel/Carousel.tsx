@@ -9,7 +9,11 @@ interface ICarousel {
 export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
   // Memoize items so the gallery receives a stable reference unless urls change
   const items = useMemo(
-    () => urls.map((url) => ({ original: url, thumbnail: url })),
+    () =>
+      urls.map((url) => ({
+        original: url.replace("-thumbnail.", "."),
+        thumbnail: url,
+      })),
     [urls],
   );
 

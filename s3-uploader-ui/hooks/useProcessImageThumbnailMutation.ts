@@ -1,18 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { uploadFileToS3 } from "@/lib/aws-s3";
+import { processImageThumbnail } from "@/lib/aws-s3";
 
 interface UploadMutationVariables {
-  file: File;
-  onProgress: (progress: number) => void;
+  urls: string[];
 }
 
-export const useUploadFileMutation = (filePathPrefix?: string) => {
+export const useProcessImageThumbnailMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ file, onProgress }: UploadMutationVariables) => {
-      return uploadFileToS3(file, onProgress, filePathPrefix);
+    mutationFn: async ({ urls }: UploadMutationVariables) => {
+      return processImageThumbnail(urls);
     },
     onSuccess: () => {
       // Invalidate and refetch the S3 files query after a successful upload

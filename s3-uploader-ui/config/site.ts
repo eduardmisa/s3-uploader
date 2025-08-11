@@ -12,6 +12,10 @@ export const siteConfig = {
       label: "Upload",
       href: "/upload",
     },
+    {
+      label: "Thumbnails",
+      href: "/thumbnails",
+    },
   ],
   navMenuItems: [
     {
@@ -21,6 +25,10 @@ export const siteConfig = {
     {
       label: "Upload",
       href: "/upload",
+    },
+    {
+      label: "Thumbnails",
+      href: "/thumbnails",
     },
   ],
   links: {

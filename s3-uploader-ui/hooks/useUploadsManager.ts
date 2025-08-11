@@ -18,6 +18,7 @@ export const useUploadsManager = ({
   filePathPrefix,
 }: UseUploadsManagerProps) => {
   const { mutateAsync } = useUploadFileMutation(filePathPrefix);
+
   const [activeUploadsCount, setActiveUploadsCount] = useState(0);
   const CONCURRENCY_LIMIT = 3;
 

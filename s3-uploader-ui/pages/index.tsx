@@ -10,6 +10,7 @@ import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
 import { useSideNavBar } from "@/hooks/useSideNav";
 import { Carousel } from "@/components/Carousel";
+import { getThumbnailUrl } from "@/utils/urlUtil";
 
 export default function IndexPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -38,7 +39,7 @@ export default function IndexPage() {
           alt={`S3 Image ${name}`}
           className="object-cover"
           height={200}
-          src={url}
+          src={getThumbnailUrl(url) || ""}
           onClick={() => onImageClick(url)}
         />
         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">

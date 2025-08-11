@@ -2,11 +2,6 @@ import axios from "axios";
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
-interface UploadProgressEvent {
-  loaded: number;
-  total: number;
-}
-
 export const uploadFileToS3 = async (
   file: File,
   onProgress: (progress: number) => void,
@@ -42,24 +37,35 @@ export const uploadFileToS3 = async (
     // Return a generic success object.
     return { success: true };
   } catch (error) {
-    console.error("Error in uploadFileToS3:", error);
     throw error;
   }
 };
 
 export interface ListFilesResult {
   fileUrls: string[];
+  imageThumbnailsUrls: string[];
   nextContinuationToken?: string;
 }
 
 export const listFilesFromS3 = async (): Promise<ListFilesResult> => {
   try {
     const response = await axios.get(`${BACKEND_API_URL}/files`);
-    const { fileUrls } = response.data;
+    const { fileUrls, imageThumbnailsUrls } = response.data;
 
-    return { fileUrls };
+    return { fileUrls, imageThumbnailsUrls };
   } catch (error) {
-    console.error("Error listing files from S3 via backend:", error);
+    throw error;
+  }
+};
+
+export const processImageThumbnail = async (urls: string[]): Promise<any> => {
+  try {
+    await axios.post(`${BACKEND_API_URL}/thumbnails/generate`, {
+      urls,
+    });
+
+    return { success: true };
+  } catch (error) {
     throw error;
   }
 };
