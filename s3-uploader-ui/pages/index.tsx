@@ -8,7 +8,7 @@ import { listFilesFromS3, ListFilesResult } from "@/lib/aws-s3";
 import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
 import { VirtuosoMasonry } from '@virtuoso.dev/masonry'
-import React, { useRef } from "react";
+import React, { useMemo } from "react";
 
 export default function IndexPage() {
   const { data: s3FileData } = useQuery<ListFilesResult>({
@@ -16,9 +16,11 @@ export default function IndexPage() {
     queryFn: () => listFilesFromS3(),
   });
 
-  const data = s3FileData?.fileUrls || [];
+  const data = useMemo(() => {
+    return s3FileData?.fileUrls || [];
+  }, [s3FileData])
 
-  const CardImage: React.FC<{ context: unknown; data: string; index: number; }> = ({ data }) => {
+  const CardImage: React.FC<{ data: string; }> = ({ data }) => {
     if (!s3FileData || s3FileData.fileUrls.length <= 0)
       return <></>
 
@@ -28,7 +30,7 @@ export default function IndexPage() {
     return (
       <Card
         isFooterBlurred
-        className="border-none radius-lg transition-transform duration-200 hover:scale-105 m-5"
+        className="border-none radius-lg transition-transform duration-200 hover:scale-105 m-1"
         style={{ width: "200px" }}
       >
         <Image
@@ -36,6 +38,7 @@ export default function IndexPage() {
           className="object-cover"
           height={200}
           src={url}
+          onClick={() => window.open(url, "_blank")}
         />
         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
           <Tooltip content={name} showArrow={true}>
@@ -70,7 +73,7 @@ export default function IndexPage() {
         <div className="flex flex-wrap gap-4 justify-center w-full">
           <VirtuosoMasonry
             useWindowScroll
-            columnCount={5}
+            columnCount={6}
             initialItemCount={20}
             data={data}
             ItemContent={CardImage}
