@@ -10,6 +10,7 @@ import {
 import { Link } from "@heroui/link";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import clsx from "clsx";
 import { Button } from "@heroui/button";
 import { FolderTree } from "lucide-react";
@@ -23,6 +24,7 @@ import { useSideNavBar } from "@/hooks/useSideNav";
 
 export const Navbar = () => {
   const { toggleSideNav } = useSideNavBar();
+  const router = useRouter();
 
   // const searchInput = (
   //   <Input
@@ -66,6 +68,7 @@ export const Navbar = () => {
                   "data-[active=true]:text-primary data-[active=true]:font-medium",
                 )}
                 color="foreground"
+                data-active={router.asPath === item.href}
                 href={item.href}
               >
                 {item.label}
@@ -101,9 +104,17 @@ export const Navbar = () => {
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
-              <Link color={"primary"} href={item.href} size="lg">
+              <NextLink
+                className={clsx(
+                  linkStyles({ color: "foreground" }),
+                  "data-[active=true]:text-primary data-[active=true]:font-medium",
+                )}
+                color="foreground"
+                data-active={router.asPath === item.href}
+                href={item.href}
+              >
                 {item.label}
-              </Link>
+              </NextLink>
             </NavbarMenuItem>
           ))}
         </div>
