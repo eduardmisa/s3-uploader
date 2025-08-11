@@ -356,8 +356,18 @@ const convertUrlsToTree = (urls: string[]): TreeNode[] => {
   const tree: TreeNode[] = [];
 
   urls.forEach((url) => {
-    const s3BaseUrl = process.env.NEXT_PUBLIC_S3_BUCKET_URL;
-    const pathParts = url.split(`${s3BaseUrl}/`)[1].split("/");
+    // Derive the key/path from the full URL without relying on any env var.
+    // Prefer using the URL API to extract the pathname (works for both S3 and CloudFront domains).
+    let pathParts: string[] = [];
+    try {
+      const parsed = new URL(url);
+      pathParts = parsed.pathname.replace(/^\/+/, "").split("/");
+      console.log("pathParts", pathParts)
+    } catch {
+      // Fallback: strip protocol + domain if URL parsing fails
+      const withoutDomain = url.replace(/^[^:]+:\/\/[^/]+\/?/, "");
+      pathParts = withoutDomain.split("/");
+    }
     let currentLevel = tree;
 
     pathParts.forEach((part, index) => {
