@@ -26,6 +26,7 @@ provider:
   environment:
     DEPLOY_REGION: ${env:DEPLOY_REGION}
     S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+    CLOUDFRONT_DOMAIN: ${env:CLOUDFRONT_DOMAIN}
 
 build:
   esbuild:

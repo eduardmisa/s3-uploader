@@ -2,8 +2,10 @@ import { S3Client, ListObjectsV2Command, PutObjectCommand, ListObjectsV2CommandO
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { APIGatewayProxyHandler } from 'aws-lambda';
 
-const s3Client = new S3Client({ region: process.env.DEPLOY_REGION });
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
+const CLOUDFRONT_DOMAIN = process.env.CLOUDFRONT_DOMAIN;
+
+const s3Client = new S3Client({ region: process.env.DEPLOY_REGION });
 
 export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
   try {
@@ -60,9 +62,12 @@ export const listFiles: APIGatewayProxyHandler = async () => {
     });
 
     const response: ListObjectsV2CommandOutput = await s3Client.send(command);
+    const baseUrl = CLOUDFRONT_DOMAIN
+      ? `https://${CLOUDFRONT_DOMAIN}`
+      : `https://${S3_BUCKET_NAME}.s3.${process.env.DEPLOY_REGION}.amazonaws.com`;
     const fileUrls = (response.Contents || [])
       .filter(object => object.Key && !object.Key.endsWith('/')) // Exclude directories
-      .map(object => `https://${S3_BUCKET_NAME}.s3.${process.env.DEPLOY_REGION}.amazonaws.com/${object.Key}`);
+      .map(object => `${baseUrl}/${object.Key}`);
 
     return {
       statusCode: 200,
