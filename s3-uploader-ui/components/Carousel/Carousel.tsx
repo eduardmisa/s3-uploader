@@ -14,7 +14,7 @@ export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
     () =>
       urls.map((url) => ({
         original: url,
-        thumbnail: getThumbnailUrl(url),
+        thumbnail: getThumbnailUrl(url) || "",
       })),
     [urls],
   );
