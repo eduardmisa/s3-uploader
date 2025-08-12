@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import ImageGallery, { ReactImageGalleryItem } from "react-image-gallery";
+import { Image } from "@heroui/image";
 
 import { getThumbnailUrl } from "@/utils/urlUtil";
 
@@ -14,6 +15,18 @@ export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
       urls.map((url) => ({
         original: url,
         thumbnail: getThumbnailUrl(url) || "",
+        renderItem: (item) => {
+          return (
+            <div className="flex w-full justify-center">
+              <Image
+                alt={"carousel-image"}
+                className="object-contain max-h-screen max-w-[90dvw]"
+                shadow="lg"
+                src={item.original}
+              />
+            </div>
+          );
+        },
       })),
     [urls],
   );
