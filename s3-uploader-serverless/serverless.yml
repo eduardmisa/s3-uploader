@@ -42,7 +42,7 @@ build:
 
 functions:
   getPresignedUrl:
-    handler: src/handlers/s3.getPresignedUrl
+    handler: src/handlers/getPresignedUrl.getPresignedUrl
     events:
       - http:
           path: upload
@@ -51,7 +51,7 @@ functions:
             origin: "*"
 
   listS3Files:
-    handler: src/handlers/s3.listFiles
+    handler: src/handlers/listFiles.listFiles
     events:
       - http:
           path: files
@@ -60,7 +60,7 @@ functions:
             origin: "*"
 
   generateThumbnails:
-    handler: src/handlers/s3.generateThumbnails
+    handler: src/handlers/generateThumbnails.generateThumbnails
     events:
       - http:
           path: thumbnails/generate
