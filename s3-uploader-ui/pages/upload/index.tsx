@@ -3,9 +3,10 @@ import { Button } from "@heroui/button";
 import { cn } from "@heroui/theme";
 import { UploadIcon } from "lucide-react";
 import { Image } from "@heroui/image";
-import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
+import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/progress";
 import { Virtuoso } from "react-virtuoso";
+import { useRouter } from "next/router";
 
 import DefaultLayout from "@/layouts/default";
 import { Dropzone } from "@/components/Dropzone";
@@ -15,6 +16,16 @@ import { useSideNavBar } from "@/hooks/useSideNav";
 
 export default function UploadPage() {
   const { pathHistory } = useSideNavBar();
+  const router = useRouter();
+
+  // Prefer the explicit ?path query param for uploads; fall back to in-memory pathHistory
+  const filePathPrefix = router.query.path
+    ? Array.isArray(router.query.path)
+      ? router.query.path.join("/")
+      : String(router.query.path)
+    : pathHistory.length > 0
+      ? pathHistory.join("/")
+      : undefined;
 
   const [filesToUpload, setFilesToUpload] = useState<FileUploadState[]>([]);
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>(() => {
@@ -29,7 +40,7 @@ export default function UploadPage() {
     filesToUpload,
     setFilesToUpload,
     setUploadedFileNames,
-    filePathPrefix: pathHistory.length > 0 ? pathHistory.join("/") : undefined,
+    filePathPrefix,
   });
 
   const handleFilesDropped = (acceptedFiles: File[]) => {
@@ -70,7 +81,8 @@ export default function UploadPage() {
       <Card className="py-4">
         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
           <p className="text-tiny uppercase font-bold">
-            {title} <small className="text-default-500">{fileList.length} Files</small>
+            {title}{" "}
+            <small className="text-default-500">{fileList.length} Files</small>
           </p>
         </CardHeader>
         <CardBody className="overflow-visible py-2">
@@ -119,9 +131,7 @@ export default function UploadPage() {
 
               <h4 className="font-bold text-large">
                 Uploading to{" "}
-                <span className="underline">
-                  {pathHistory[pathHistory.length - 1] || "ROOT"}
-                </span>{" "}
+                <span className="underline">{filePathPrefix || "ROOT"}</span>{" "}
                 folder
               </h4>
             </CardHeader>
@@ -143,8 +153,12 @@ export default function UploadPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {queued && queued.length > 0 && renderStatusCard("Queued", queued)}
-            {uploading && uploading.length > 0 && renderStatusCard("Uploading", uploading)}
-            {uploaded && uploaded.length > 0 && renderStatusCard("Uploaded", uploaded)}
+            {uploading &&
+              uploading.length > 0 &&
+              renderStatusCard("Uploading", uploading)}
+            {uploaded &&
+              uploaded.length > 0 &&
+              renderStatusCard("Uploaded", uploaded)}
             {failed && failed.length > 0 && renderStatusCard("Failed", failed)}
           </div>
         </div>

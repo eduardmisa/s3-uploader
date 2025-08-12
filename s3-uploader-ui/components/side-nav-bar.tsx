@@ -24,7 +24,8 @@ import {
   ChevronLeft,
   PlusCircleIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/router";
 
 import { convertUrlsToTree, findNodeInTree } from "@/utils/treeUtil";
 import { TreeNode } from "@/types";
@@ -40,14 +41,46 @@ export const SideNavBar = () => {
     setPathHistory: setPathHistoryContext,
   } = useSideNavBar();
 
+  const router = useRouter();
+
   const { data: s3FileData } = useQuery<ListFilesResult>({
     queryKey: ["s3Files"],
     queryFn: () => listFilesFromS3(),
   });
 
+  const initializedRef = useRef(false);
+
   useEffect(() => {
+    // Wait until we have file data and router to be ready before attempting to set a folder
+    if (!s3FileData) return;
+    if (!router || !router.isReady) return;
+
+    // If a path query param is present, prefer it and initialize side nav from it.
+    // This prevents overwriting the desired folder (e.g., when opening Upload in a new tab).
+    if (router.query.path) {
+      const q = router.query.path;
+      const val = Array.isArray(q) ? q.join("/") : String(q);
+      const parts = val.split("/").filter(Boolean);
+
+      if (parts.length === 0) {
+        handleAction("ROOT");
+      } else {
+        // Use handleAction with a provided history so it doesn't append duplicate entries
+        handleAction(parts[parts.length - 1], parts);
+      }
+
+      // mark as initialized from query so we allow subsequent syncs
+      initializedRef.current = true;
+
+      return;
+    }
+
+    // Fallback: default to root when there's no query param
     handleAction("ROOT");
-  }, [s3FileData]);
+
+    // mark initialized so side-nav can start syncing pathHistory -> query
+    initializedRef.current = true;
+  }, [s3FileData, router?.isReady, router?.query?.path]);
 
   const treeData = convertUrlsToTree(s3FileData?.fileUrls || []);
 
@@ -63,6 +96,29 @@ export const SideNavBar = () => {
 
   useEffect(() => {
     setPathHistoryContext(pathHistory);
+
+    // only sync to the router after initial load/initialization to avoid clobbering the incoming ?path
+    if (!initializedRef.current) {
+      return;
+    }
+
+    // keep the URL query in sync so the selected folder persists across tabs/refresh
+    if (router && router.isReady) {
+      const newQuery = { ...router.query };
+
+      if (pathHistory.length > 0) {
+        newQuery.path = pathHistory.join("/");
+      } else {
+        delete newQuery.path;
+      }
+      router.replace(
+        { pathname: router.pathname, query: newQuery },
+        undefined,
+        {
+          shallow: true,
+        },
+      );
+    }
   }, [pathHistory]);
 
   const [newFolderName, setNewFolderName] = useState("");
@@ -193,7 +249,7 @@ export const SideNavBar = () => {
                       </Button>
                     }
                   >
-                    {pathHistory[pathHistory.length - 1] || "ROOT"}
+                    {pathHistory.length > 0 ? pathHistory.join("/") : "ROOT"}
                   </ListboxItem>
 
                   {renderNodes()}
