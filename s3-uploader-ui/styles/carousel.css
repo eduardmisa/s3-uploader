@@ -1,5 +1,9 @@
 @reference "tailwindcss";
 
+.image-gallery-swipe {
+  @apply h-screen!
+}
+
 .image-gallery-bullets > .image-gallery-bullets-container {
   @apply flex flex-wrap gap-1 justify-center;
 }
