@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useRef } from "react";
 import ImageGallery, { ReactImageGalleryItem } from "react-image-gallery";
 
 import { getThumbnailUrl } from "@/utils/urlUtil";
-import "react-image-gallery/styles/css/image-gallery.css";
-import "./css/carousel.css";
 
 interface ICarousel {
   urls: string[];

@@ -7,6 +7,8 @@ import { useRouter } from "next/router";
 
 import { fontSans, fontMono } from "@/config/fonts";
 import "@/styles/globals.css";
+import "react-image-gallery/styles/css/image-gallery.css";
+import "@/styles/carousel.css";
 import { SideNavProvider } from "@/hooks/useSideNav";
 
 const queryClient = new QueryClient();
