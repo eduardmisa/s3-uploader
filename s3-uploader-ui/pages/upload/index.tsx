@@ -64,81 +64,86 @@ export default function UploadPage() {
 
   const canUpload = uploading.length === 0 && queued.length > 0;
 
-  const renderUploadStatusCardFooter = (fileList: FileUploadState[]) => {
+  const renderStatusCard = (title: string, fileList: FileUploadState[]) => {
     return (
-      <CardFooter className="flex flex-col text-white/60 gap-4">
-        <div className="flex flex-col w-full grow gap-2 items-center">
-          {fileList.map((fileList, index) => (
-            <div
-              key={`${fileList.id}-${index}`}
-              className="flex w-full items-center gap-2"
-            >
-              <Image
-                alt="Breathing app icon"
-                className="rounded-sm w-10 h-11 bg-black"
-                src={fileList.preview}
-              />
-              <div className="flex flex-col w-full gap-2">
-                <p className="text-tiny">{fileList.file.name}</p>
-                <Progress
-                  aria-label="Loading..."
-                  className="max-w-md"
-                  color={fileList.progress === 100 ? "success" : "primary"}
-                  size="sm"
-                  value={fileList.progress}
+      <Card className="py-4">
+        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+          <p className="text-tiny uppercase font-bold">
+            {title}{" "}
+            <small className="text-default-500">{fileList.length} Files</small>
+          </p>
+        </CardHeader>
+        <CardBody className="overflow-visible py-2">
+          <div className="flex flex-col w-full gap-2">
+            {fileList.map((f, index) => (
+              <div key={`${f.id}-${index}`} className="flex w-full items-center gap-2">
+                <Image
+                  alt={f.file.name}
+                  className="rounded-sm w-10 h-11 bg-black"
+                  src={f.preview}
                 />
+                <div className="flex flex-col w-full gap-2">
+                  <p className="text-tiny">{f.file.name}</p>
+                  <Progress
+                    aria-label="Loading..."
+                    className="max-w-md"
+                    color={f.progress === 100 ? "success" : "primary"}
+                    size="sm"
+                    value={f.progress}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </CardFooter>
+            ))}
+          </div>
+        </CardBody>
+      </Card>
     );
   };
 
   return (
     <DefaultLayout>
       <section className="flex flex-row items-start justify-center gap-4 py-8 md:py-10 flex-wrap-reverse">
-        <Card className="py-4">
-          <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-            <p className="text-tiny uppercase font-bold">
-              To upload{" "}
-              <small className="text-default-500">
-                {queued.length || 0} Files
-              </small>
-            </p>
+        <div className="flex flex-col gap-4 w-full max-w-4xl">
+          <Card className="py-4">
+            <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+              <p className="text-tiny uppercase font-bold">
+                To upload{" "}
+                <small className="text-default-500">
+                  {queued.length || 0} Files
+                </small>
+              </p>
 
-            <h4 className="font-bold text-large">
-              Uploading to{" "}
-              <span className="underline">
-                {pathHistory[pathHistory.length - 1] || "ROOT"}
-              </span>{" "}
-              folder
-            </h4>
-          </CardHeader>
-          <CardBody className="overflow-visible py-2">
-            <Dropzone onFilesDropped={handleFilesDropped} />
+              <h4 className="font-bold text-large">
+                Uploading to{" "}
+                <span className="underline">
+                  {pathHistory[pathHistory.length - 1] || "ROOT"}
+                </span>{" "}
+                folder
+              </h4>
+            </CardHeader>
+            <CardBody className="overflow-visible py-2">
+              <Dropzone onFilesDropped={handleFilesDropped} />
 
-            <Button
-              color={canUpload ? "success" : "default"}
-              disabled={!canUpload}
-              isLoading={activeUploadsCount > 0}
-              variant={canUpload ? "shadow" : "faded"}
-              onPress={startUploads}
-            >
-              {canUpload ? "Start Upload" : "Select/Drop files to upload"}{" "}
-              <UploadIcon size={15} />
-            </Button>
-          </CardBody>
+              <Button
+                color={canUpload ? "success" : "default"}
+                disabled={!canUpload}
+                isLoading={activeUploadsCount > 0}
+                variant={canUpload ? "shadow" : "faded"}
+                onPress={startUploads}
+              >
+                {canUpload ? "Start Upload" : "Select/Drop files to upload"}{" "}
+                <UploadIcon size={15} />
+              </Button>
+            </CardBody>
+          </Card>
 
-          {queued && queued.length > 0 && renderUploadStatusCardFooter(queued)}
-          {uploading &&
-            uploading.length > 0 &&
-            renderUploadStatusCardFooter(uploading)}
-          {uploaded &&
-            uploaded.length > 0 &&
-            renderUploadStatusCardFooter(uploaded)}
-          {failed && failed.length > 0 && renderUploadStatusCardFooter(failed)}
-        </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {queued && queued.length > 0 && renderStatusCard("Queued", queued)}
+            {uploading && uploading.length > 0 && renderStatusCard("Uploading", uploading)}
+            {uploaded && uploaded.length > 0 && renderStatusCard("Uploaded", uploaded)}
+            {failed && failed.length > 0 && renderStatusCard("Failed", failed)}
+          </div>
+        </div>
       </section>
     </DefaultLayout>
   );
