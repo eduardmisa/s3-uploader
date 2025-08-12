@@ -13,12 +13,6 @@ export const useUploadFileMutation = (filePathPrefix?: string) => {
   return useMutation({
     mutationFn: async ({ file, onProgress }: UploadMutationVariables) => {
       return uploadFileToS3(file, onProgress, filePathPrefix);
-    },
-    onSuccess: () => {
-      // Invalidate and refetch the S3 files query after a successful upload
-      queryClient.invalidateQueries({ queryKey: ["s3Files"] });
-      // You might also want to update the local state of filesToUpload here
-      // or handle it in the component that calls this mutation.
-    },
+    }
   });
 };
