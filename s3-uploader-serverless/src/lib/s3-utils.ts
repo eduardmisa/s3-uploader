@@ -1,5 +1,9 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
+import { randomUUID } from "crypto";
 import ffmpegPath from "ffmpeg-static";
 
 export const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
@@ -50,41 +54,56 @@ export const extractFrameFromVideo = async (buffer: Buffer): Promise<Buffer> => 
     throw new Error("ffmpeg binary not found (ffmpeg-static returned null)");
   }
 
-  return new Promise<Buffer>((resolve, reject) => {
-    try {
-      const ff = spawn(ffmpegPath as string, [
-        "-i",
-        "pipe:0",
-        "-ss",
-        "00:00:00.500",
-        "-vframes",
-        "1",
-        "-f",
-        "image2",
-        "pipe:1",
-      ]) as ChildProcessWithoutNullStreams;
+  // Write the video buffer to a temp file and have ffmpeg extract a single frame to a temp image file.
+  // This avoids pipe-related demuxing issues for some files.
+  const tmpDir = os.tmpdir();
+  const videoPath = path.join(tmpDir, `video-${randomUUID()}.tmp`);
+  const imagePath = path.join(tmpDir, `frame-${randomUUID()}.jpg`);
 
-      const chunks: Buffer[] = [];
-      ff.stdout.on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
-      ff.stderr.on("data", (d: Buffer | string) => {
-        // ffmpeg logs to stderr; keep for debugging
-        console.error("ffmpeg:", d.toString());
-      });
+  try {
+    await fs.writeFile(videoPath, buffer, { encoding: "binary" });
+
+    const args = [
+      "-ss",
+      "00:00:00.500", // seek to 0.5s
+      "-i",
+      videoPath,
+      "-frames:v",
+      "1",
+      "-q:v",
+      "2", // quality for jpeg
+      imagePath,
+    ];
+
+    const ff = spawn(ffmpegPath as string, args) as ChildProcessWithoutNullStreams;
+
+    // Collect stderr for debug, but we don't stream stdout since ffmpeg writes to a file
+    let stderr = "";
+    ff.stderr.on("data", (d: Buffer | string) => {
+      stderr += d.toString();
+    });
+
+    await new Promise<void>((resolve, reject) => {
       ff.on("error", (err: Error) => reject(err));
       ff.on("close", (code: number | null) => {
-        if (code === 0 || code === null) {
-          resolve(Buffer.concat(chunks));
-        } else {
-          reject(new Error(`ffmpeg exited with code ${code}`));
-        }
+        if (code === 0 || code === null) resolve();
+        else reject(new Error(`ffmpeg exited with code ${code}. stderr: ${stderr}`));
       });
+    });
 
-      ff.stdin.write(buffer);
-      ff.stdin.end();
-    } catch (err) {
-      reject(err as Error);
+    // Read generated image
+    const imgBuffer = await fs.readFile(imagePath);
+
+    return imgBuffer;
+  } finally {
+    // Best-effort cleanup
+    try {
+      await fs.unlink(videoPath).catch(() => {});
+      await fs.unlink(imagePath).catch(() => {});
+    } catch {
+      // ignore cleanup errors
     }
-  });
+  }
 };
 
 /**
