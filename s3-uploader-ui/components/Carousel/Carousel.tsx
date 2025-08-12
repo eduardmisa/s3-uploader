@@ -44,7 +44,7 @@ export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
       items={items}
       lazyLoad={true}
       showBullets={false}
-      showFullscreenButton={false}
+      showFullscreenButton={true}
       showPlayButton={false}
       slideDuration={300}
       startIndex={selectedUrlIndex}
