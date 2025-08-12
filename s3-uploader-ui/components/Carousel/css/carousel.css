@@ -1,0 +1,11 @@
+@reference "tailwindcss";
+
+.image-gallery-bullets > .image-gallery-bullets-container {
+  @apply flex flex-wrap gap-1 justify-center;
+}
+
+.image-gallery-bullets
+  > .image-gallery-bullets-container
+  > .image-gallery-bullet.active {
+  @apply bg-blue-600;
+}

@@ -23,42 +23,47 @@ export default function IndexPage() {
     onOpen();
   };
 
-  const CardImage: React.FC<{ data: string }> = useCallback(({ data }) => {
-    if (!data) return <></>;
+  const CardImage: React.FC<{ data: string }> = useCallback(
+    ({ data }) => {
+      if (!data) return <></>;
 
-    const url = data;
-    const name = url.split("/").pop() || "Unknown";
+      const url = data;
+      const name = url.split("/").pop() || "Unknown";
 
-    return (
-      <Card
-        isFooterBlurred
-        className="border-none radius-lg transition-transform duration-200 hover:scale-105 mx-auto! my-3 w-[150px] h-[150px]"
-      >
-        <Image
-          alt={`S3 Image ${name}`}
-          className="object-cover"
-          height={200}
-          src={getThumbnailUrl(url) || ""}
-          onClick={() => onImageClick(url)}
-        />
-        <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
-          <Tooltip content={name} showArrow={true}>
-            <Button
-              fullWidth
-              className="text-tiny text-white bg-black/20"
-              color="default"
-              radius="lg"
-              size="sm"
-              variant="light"
-              onPress={() => onImageClick(url)}
-            >
-              {name}
-            </Button>
-          </Tooltip>
-        </CardFooter>
-      </Card>
-    );
-  }, []);
+      return (
+        <Card
+          isFooterBlurred
+          className="border-none radius-lg transition-transform duration-200 hover:scale-105 mx-auto! my-3 w-[150px] h-[150px]"
+        >
+          <Image
+            alt={`S3 Image ${name}`}
+            className="object-cover"
+            height={150}
+            isZoomed={true}
+            src={getThumbnailUrl(url) || ""}
+            width={150}
+            onClick={() => onImageClick(url)}
+          />
+          <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+            <Tooltip content={name} showArrow={true}>
+              <Button
+                fullWidth
+                className="text-tiny text-white bg-black/20"
+                color="default"
+                radius="lg"
+                size="sm"
+                variant="light"
+                onPress={() => onImageClick(url)}
+              >
+                {name}
+              </Button>
+            </Tooltip>
+          </CardFooter>
+        </Card>
+      );
+    },
+    [isOpen],
+  );
 
   const items = useMemo(() => currentFolderImages || [], [currentFolderImages]);
 

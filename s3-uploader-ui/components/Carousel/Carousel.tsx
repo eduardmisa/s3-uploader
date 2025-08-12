@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import ImageGallery from "react-image-gallery";
+import ImageGallery, { ReactImageGalleryItem } from "react-image-gallery";
 
 import { getThumbnailUrl } from "@/utils/urlUtil";
 import "react-image-gallery/styles/css/image-gallery.css";
+import "./css/carousel.css";
 
 interface ICarousel {
   urls: string[];
@@ -10,7 +11,7 @@ interface ICarousel {
 }
 export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
   // Memoize items so the gallery receives a stable reference unless urls change
-  const items = useMemo(
+  const items = useMemo<ReactImageGalleryItem[]>(
     () =>
       urls.map((url) => ({
         original: url,
@@ -43,8 +44,11 @@ export const Carousel = ({ urls, selectedUrl }: ICarousel) => {
     <ImageGallery
       ref={galleryRef}
       items={items}
+      lazyLoad={true}
+      showBullets={true}
       showFullscreenButton={false}
       showPlayButton={false}
+      slideDuration={300}
       startIndex={selectedUrlIndex}
       thumbnailPosition="left"
     />
