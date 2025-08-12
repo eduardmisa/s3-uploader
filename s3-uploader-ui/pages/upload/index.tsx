@@ -5,6 +5,7 @@ import { UploadIcon } from "lucide-react";
 import { Image } from "@heroui/image";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/progress";
+import { Virtuoso } from "react-virtuoso";
 
 import DefaultLayout from "@/layouts/default";
 import { Dropzone } from "@/components/Dropzone";
@@ -69,31 +70,34 @@ export default function UploadPage() {
       <Card className="py-4">
         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
           <p className="text-tiny uppercase font-bold">
-            {title}{" "}
-            <small className="text-default-500">{fileList.length} Files</small>
+            {title} <small className="text-default-500">{fileList.length} Files</small>
           </p>
         </CardHeader>
         <CardBody className="overflow-visible py-2">
-          <div className="flex flex-col w-full gap-2">
-            {fileList.map((f, index) => (
-              <div key={`${f.id}-${index}`} className="flex w-full items-center gap-2">
-                <Image
-                  alt={f.file.name}
-                  className="rounded-sm w-10 h-11 bg-black"
-                  src={f.preview}
-                />
-                <div className="flex flex-col w-full gap-2">
-                  <p className="text-tiny">{f.file.name}</p>
-                  <Progress
-                    aria-label="Loading..."
-                    className="max-w-md"
-                    color={f.progress === 100 ? "success" : "primary"}
-                    size="sm"
-                    value={f.progress}
+          {/* Fixed-height scroll area so Virtuoso can virtualize */}
+          <div style={{ height: 320 }}>
+            <Virtuoso
+              data={fileList}
+              itemContent={(index, f) => (
+                <div key={f.id} className="flex w-full items-center gap-2 p-2">
+                  <Image
+                    alt={f.file.name}
+                    className="rounded-sm w-10 h-11 bg-black"
+                    src={f.preview}
                   />
+                  <div className="flex flex-col w-full gap-2">
+                    <p className="text-tiny">{f.file.name}</p>
+                    <Progress
+                      aria-label="Loading..."
+                      className="max-w-md"
+                      color={f.progress === 100 ? "success" : "primary"}
+                      size="sm"
+                      value={f.progress}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              )}
+            />
           </div>
         </CardBody>
       </Card>
