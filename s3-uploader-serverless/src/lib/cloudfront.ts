@@ -1,42 +1,25 @@
 import crypto from "crypto";
 
 /**
- * Helpers to create CloudFront signed cookies (custom policy).
- *
- * Note:
- * - Expects privateKey in PEM format (RSA).
- * - Returns cookie values (not full Set-Cookie strings).
- *
- * Reference policy format:
- * {
- *   "Statement": [
- *     {
- *       "Resource": "https://d111111abcdef8.cloudfront.net/*",
- *       "Condition": {
- *         "DateLessThan": {"AWS:EpochTime": 1357034400}
- *       }
- *     }
- *   ]
- * }
+ * CloudFront-safe Base64 (for cookies/URLs)
+ * Do NOT strip padding. Apply AWS's custom mapping:
+ *   '+' -> '-'
+ *   '/' -> '~'
+ *   '=' -> '_'
  */
+const toCloudFrontBase64 = (inputB64: string) =>
+  inputB64.replace(/\+/g, "-").replace(/\//g, "~").replace(/=/g, "_");
 
-const base64UrlEncode = (buf: Buffer) => {
-  return buf
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-};
+const toBase64 = (buf: Buffer) => buf.toString("base64");
 
+/** Build a simple custom policy that expires at a given epoch time. */
 export const makePolicy = (resource: string, expiresAtEpochSeconds: number) => {
   const policy = {
     Statement: [
       {
-        Resource: resource,
+        Resource: resource, // e.g., "https://cdn.file-manager.emisa.me/*"
         Condition: {
-          DateLessThan: {
-            "AWS:EpochTime": expiresAtEpochSeconds,
-          },
+          DateLessThan: { "AWS:EpochTime": expiresAtEpochSeconds },
         },
       },
     ],
@@ -44,37 +27,58 @@ export const makePolicy = (resource: string, expiresAtEpochSeconds: number) => {
   return JSON.stringify(policy);
 };
 
-export const signPolicy = (policyString: string, privateKeyPem: string) => {
-  // CloudFront requires RSA-SHA1 signature for signed cookies/URLs.
-  // Use crypto.sign with "RSA-SHA1".
-  const signer = crypto.createSign("RSA-SHA1");
-  signer.update(policyString);
-  signer.end();
-  const signature = signer.sign(privateKeyPem);
+/**
+ * Sign the policy string.
+ * For Key Groups (recommended), use "RSA-SHA256".
+ * For legacy Key Pairs, use "RSA-SHA1".
+ */
+export const signPolicy = (
+  policyString: string,
+  privateKeyPem: string,
+  algo: "RSA-SHA256" | "RSA-SHA1" = "RSA-SHA256"
+) => {
+  const signer = crypto.createSign(algo);
+  signer.update(policyString, "utf8");
+  const signature = signer.sign(privateKeyPem); // Buffer
   return signature;
 };
 
 /**
- * Create signed cookie values for a custom policy.
+ * Create CloudFront signed cookie values (not full Set-Cookie headers).
  *
- * @param resource e.g. https://<cloudfront-domain>/* or https://<cloudfront-domain>/path/*
- * @param expiresInSeconds lifetime in seconds from now
- * @param keyPairId public key id (CloudFront key pair id or public key id depending on method)
- * @param privateKeyPem private key in PEM format
- *
- * @returns { policy: string, signature: string, keyPairId: string }
+ * @param resource   e.g. "https://cdn.file-manager.emisa.me/*" or with a path prefix
+ * @param expiresInSeconds  lifetime from now, in seconds
+ * @param keyPairId  For Key Groups, this is the Public Key ID; for legacy, the Key Pair ID
+ * @param privateKeyPem PEM private key matching the public key in the trusted key group (or key pair)
+ * @param algo optional: "RSA-SHA256" (default) or "RSA-SHA1" for legacy key pairs
  */
-export const getSignedCookies = (resource: string, expiresInSeconds: number, keyPairId: string, privateKeyPem: string) => {
+export const getSignedCookies = (
+  resource: string,
+  expiresInSeconds: number,
+  keyPairId: string,
+  privateKeyPem: string,
+  algo: "RSA-SHA256" | "RSA-SHA1" = "RSA-SHA256"
+) => {
   const expiresAt = Math.floor(Date.now() / 1000) + Math.floor(expiresInSeconds);
+
+  // 1) Policy JSON
   const policy = makePolicy(resource, expiresAt);
-  const policyB64 = base64UrlEncode(Buffer.from(policy, "utf8"));
-  const signatureBuf = signPolicy(policy, privateKeyPem);
-  const signatureB64 = base64UrlEncode(signatureBuf);
+
+  // 2) Base64 -> CloudFront-safe for Policy
+  const policyB64 = toBase64(Buffer.from(policy, "utf8"));
+  const policyCF = toCloudFrontBase64(policyB64);
+
+  // 3) Sign policy with RSA (SHA256 default)
+  const signatureBuf = signPolicy(policy, privateKeyPem, algo);
+
+  // 4) Base64 -> CloudFront-safe for Signature
+  const signatureB64 = toBase64(signatureBuf);
+  const signatureCF = toCloudFrontBase64(signatureB64);
 
   return {
-    policy: policyB64,
-    signature: signatureB64,
-    keyPairId,
+    policy: policyCF,          // CloudFront-Policy cookie value
+    signature: signatureCF,    // CloudFront-Signature cookie value
+    keyPairId,                 // CloudFront-Key-Pair-Id cookie value
     expiresAt,
   };
 };
