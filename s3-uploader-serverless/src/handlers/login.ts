@@ -72,7 +72,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
         const cookies = getSignedCookies(resource, 60 * 60, cfKeyPairId, cfPrivateKey);
 
         // Create cookie strings. Use Secure;HttpOnly;SameSite as appropriate.
-        const cookieOptions = `Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${60 * 60}`;
+        const cookieOptions = `Path=/; Domain=.file-manager.emisa.me; Secure; HttpOnly; SameSite=Lax; Max-Age=${60 * 60}`;
 
         const cookie1 = `CloudFront-Policy=${cookies.policy}; ${cookieOptions}`;
         const cookie2 = `CloudFront-Signature=${cookies.signature}; ${cookieOptions}`;
