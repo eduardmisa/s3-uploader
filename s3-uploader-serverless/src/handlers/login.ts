@@ -2,6 +2,7 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import { getUserByEmail } from "../lib/users";
 import { comparePassword, signJwt } from "../lib/auth";
 import { getSignedCookies } from "../lib/cloudfront";
+import { getCorsHeaders } from "../lib/http-utils";
 
 export const login: APIGatewayProxyHandler = async (event) => {
   try {
@@ -15,10 +16,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "Missing email or password" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -28,10 +26,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -43,10 +38,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -58,10 +50,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
     const cfDomain = process.env.CLOUDFRONT_DOMAIN;
 
     // Basic simple headers for CORS (keeps compatibility with clients)
-    const simpleHeaders: Record<string, string> = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": "true",
-    };
+    const simpleHeaders: Record<string, string> = getCorsHeaders();
 
     // multiValueHeaders allows returning multiple Set-Cookie headers via API Gateway / Lambda proxy
     const multiValueHeaders: Record<string, string[]> = {};
@@ -93,15 +82,12 @@ export const login: APIGatewayProxyHandler = async (event) => {
       headers: simpleHeaders,
       multiValueHeaders,
     };
-  } catch (error) {
+    } catch (error) {
     console.error("Login error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Login failed", error: error instanceof Error ? error.message : "Unknown error" }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
+      headers: getCorsHeaders(),
     };
   }
 };

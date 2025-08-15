@@ -1,4 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
+import { getCorsHeaders } from "../lib/http-utils";
 
 /**
  * Logout handler:
@@ -17,10 +18,7 @@ export const logout: APIGatewayProxyHandler = async () => {
       ],
     };
 
-    const headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": "true",
-    };
+    const headers = getCorsHeaders();
 
     return {
       statusCode: 200,
@@ -28,15 +26,12 @@ export const logout: APIGatewayProxyHandler = async () => {
       headers,
       multiValueHeaders,
     };
-  } catch (err) {
+    } catch (err) {
     console.error("Logout error:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Logout failed" }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
+      headers: getCorsHeaders(),
     };
   }
 };

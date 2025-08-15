@@ -1,6 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { APIGatewayProxyHandler } from "aws-lambda";
+import { getCorsHeaders } from "./http-utils";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -36,10 +37,7 @@ export const comparePassword = async (password: string, hash: string): Promise<b
  */
 export const withAuth = (handler: APIGatewayProxyHandler): APIGatewayProxyHandler => {
   return async (event, context, callback): Promise<any> => {
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": true,
-    };
+    const corsHeaders = getCorsHeaders();
 
     try {
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) as string | undefined;

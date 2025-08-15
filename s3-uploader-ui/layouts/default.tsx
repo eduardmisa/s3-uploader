@@ -1,6 +1,6 @@
-import { useAuth } from "@/lib/auth";
 import { Head } from "./head";
 
+import { useAuth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 
 export default function DefaultLayout({
@@ -9,7 +9,8 @@ export default function DefaultLayout({
   children: React.ReactNode;
 }) {
   const { user } = useAuth();
-  if (!user) return <></>
+
+  if (!user) return <></>;
 
   return (
     <div className="relative flex flex-col h-screen">
@@ -21,6 +22,3 @@ export default function DefaultLayout({
     </div>
   );
 }
-
-
-

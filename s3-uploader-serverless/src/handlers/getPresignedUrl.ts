@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { s3Client, S3_BUCKET_NAME } from "../lib/s3-utils";
 import { withAuth } from "../lib/auth";
+import { getCorsHeaders } from "../lib/http-utils";
 
 export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
@@ -12,10 +13,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "Missing fileName or contentType in request body" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -30,10 +28,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
     return {
       statusCode: 200,
       body: JSON.stringify({ presignedUrl }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true,
-      },
+      headers: getCorsHeaders(),
     };
   } catch (error) {
     console.error("Error generating presigned URL:", error);
@@ -43,10 +38,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
         message: "Failed to generate presigned URL",
         error: error instanceof Error ? error.message : "Unknown error",
       }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true,
-      },
+      headers: getCorsHeaders(),
     };
   }
 });

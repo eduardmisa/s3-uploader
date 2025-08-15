@@ -11,6 +11,7 @@ import {
   getObjectBuffer,
 } from "../lib/s3-utils";
 import { withAuth } from "../lib/auth";
+import { getCorsHeaders } from "../lib/http-utils";
 
 export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
@@ -18,10 +19,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 500,
         body: JSON.stringify({ message: "S3_BUCKET_NAME is not configured" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -33,10 +31,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Request body must include a non-empty array in "keys" or "urls"' }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -44,10 +39,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: `Too many files requested. Max per request is ${BATCH_SIZE}` }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -80,10 +72,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "No valid S3 keys were parsed from the request" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true,
-        },
+        headers: getCorsHeaders(),
       };
     }
 
@@ -148,20 +137,14 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
     return {
       statusCode: 200,
       body: JSON.stringify({ created, errors }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true,
-      },
+      headers: getCorsHeaders(),
     };
   } catch (error) {
     console.error("Error generating thumbnails:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Failed to generate thumbnails", error: error instanceof Error ? error.message : "Unknown error" }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true,
-      },
+      headers: getCorsHeaders(),
     };
   }
 });

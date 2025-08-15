@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useAuth } from "@/lib/auth";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
+
+import { useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -42,30 +43,30 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardBody>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <Input
+                required
+                label="Email"
+                placeholder="Enter email here"
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email here"
-                required
-                label="Email"
               />
 
               <Input
+                required
+                label="Password"
+                placeholder="••••••••"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                label="Password"
               />
 
               <Button
-                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
                 disabled={loading}
                 isLoading={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
+                type="submit"
               >
                 {loading ? "Signing in..." : "Sign in"}
               </Button>

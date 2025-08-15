@@ -38,8 +38,8 @@ export const Navbar = () => {
         method: "POST",
         credentials: "include",
       });
-    } catch (err) {
-      console.warn("Logout request failed", err);
+    } catch {
+      // console.warn("Logout request failed", err);
     } finally {
       // clear client-side auth state and redirect to login
       clientLogout();
@@ -144,8 +144,8 @@ export const Navbar = () => {
 
           <NavbarMenuItem>
             <button
-              onClick={() => handleLogout()}
               className="w-full text-left px-2 py-1 rounded hover:bg-default-100"
+              onClick={() => handleLogout()}
             >
               Logout
             </button>

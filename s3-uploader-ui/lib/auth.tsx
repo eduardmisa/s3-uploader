@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 
@@ -20,7 +26,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,8 +36,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Load token from localStorage (client-only)
     try {
-      const stor = typeof window !== "undefined" ? localStorage.getItem("s3u_token") : null;
-      const storUser = typeof window !== "undefined" ? localStorage.getItem("s3u_user") : null;
+      const stor =
+        typeof window !== "undefined"
+          ? localStorage.getItem("s3u_token")
+          : null;
+      const storUser =
+        typeof window !== "undefined" ? localStorage.getItem("s3u_user") : null;
+
       if (stor) {
         setToken(stor);
       }
@@ -46,8 +59,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const resp = await axios.post(`${BACKEND_API_URL}/auth/login`, { email, password }, { headers: { "Content-Type": "application/json" } });
+    const resp = await axios.post(
+      `${BACKEND_API_URL}/auth/login`,
+      { email, password },
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      },
+    );
     const { token: tkn, user: u } = resp.data;
+
     if (!tkn) throw new Error("No token returned");
     setToken(tkn);
     setUser(u || null);
@@ -71,8 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // fallback to looking into localStorage (for modules that import this function)
     if (typeof window !== "undefined") {
       const t = localStorage.getItem("s3u_token");
+
       if (t) return { Authorization: `Bearer ${t}` };
     }
+
     return {};
   };
 
@@ -93,7 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = (): AuthContextValue => {
   const ctx = useContext(AuthContext);
+
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+
   return ctx;
 };
 
@@ -106,7 +131,9 @@ export const useAuth = (): AuthContextValue => {
  *    <Component {...pageProps} />
  *  </AuthGuard>
  */
-export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { token, loading } = useAuth();
   const router = useRouter();
 
@@ -116,7 +143,10 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
     const pathname = router.pathname;
 
     // Allow if the path starts with any public prefix
-    const isPublic = publicPaths.some((p) => pathname === p || pathname.startsWith(p));
+    const isPublic = publicPaths.some(
+      (p) => pathname === p || pathname.startsWith(p),
+    );
+
     if (!isPublic && !token) {
       router.replace("/login");
     }

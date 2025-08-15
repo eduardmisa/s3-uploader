@@ -10,7 +10,6 @@ import "@/styles/globals.css";
 import "react-image-gallery/styles/css/image-gallery.css";
 import "@/styles/carousel.css";
 import { SideNavProvider } from "@/hooks/useSideNav";
-
 import { AuthProvider, AuthGuard } from "@/lib/auth";
 
 const queryClient = new QueryClient();

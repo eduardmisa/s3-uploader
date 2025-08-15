@@ -9,6 +9,7 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const authHeaders = () => {
   if (typeof window === "undefined") return {};
   const token = localStorage.getItem("s3u_token");
+
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -63,7 +64,9 @@ export interface ListFilesResult {
 
 export const listFilesFromS3 = async (): Promise<ListFilesResult> => {
   try {
-    const response = await axios.get(`${BACKEND_API_URL}/files`, { headers: { ...authHeaders() } });
+    const response = await axios.get(`${BACKEND_API_URL}/files`, {
+      headers: { ...authHeaders() },
+    });
     const { fileUrls, imageThumbnailsUrls } = response.data;
 
     return { fileUrls, imageThumbnailsUrls };
