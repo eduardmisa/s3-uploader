@@ -65,6 +65,7 @@ provider:
       BeTd9hx6oFf+lmJBKBVkBiZmRmzLBGDBIln8eSs1Rg5lrYgM8RMwAMvqlGsjVh59
       dWaUMbwZCKNCvIaJdvoZ3X8crRFKp2FTY8lqE6laO//fzcDjpnkYau6tByYU8Uz+
       IKZjZ1ldWnKEn++OXvHnbm0=
+      -----END PRIVATE KEY-----
 
 build:
   esbuild:
