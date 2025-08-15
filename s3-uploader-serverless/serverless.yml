@@ -33,7 +33,7 @@ provider:
     AUTH_USERS: ""
     ADMIN_EMAIL: "eduardmisa"
     ADMIN_PASSWORD: "eduardmisa2025"
-    ADMIN_PASSWORD_HASH_B64: "JDJhJDEwJHpLUnNjanczRW9tMkpqM1FmYS9Pc2VsNDJNUjF1aTFvaUhOYTJ3M0FXd1JDV2xTTGZuOHMu"
+    ADMIN_PASSWORD_HASH: "$2a$10$zKRscjw3Eom2Jj3Qfa/Osel42MR1ui1oiHNa2w3AWwRCWlSLfn8s."
     ADMIN_NAME: "eduard"
     # CloudFront signed cookies (HARD-CODED private key; consider Secrets Manager for production)
     CLOUDFRONT_KEY_PAIR_ID: "K236INWIAMWZJX"
@@ -111,6 +111,15 @@ functions:
     events:
       - http:
           path: auth/login
+          method: post
+          cors:
+            origin: "*"
+
+  logout:
+    handler: src/handlers/logout.logout
+    events:
+      - http:
+          path: auth/logout
           method: post
           cors:
             origin: "*"

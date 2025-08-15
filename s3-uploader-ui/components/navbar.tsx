@@ -21,10 +21,31 @@ import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon } from "@/components/icons";
 import { useSideNavBar } from "@/hooks/useSideNav";
+import { useAuth } from "@/lib/auth";
+
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || "";
 
 export const Navbar = () => {
   const { toggleSideNav } = useSideNavBar();
   const router = useRouter();
+
+  const { logout: clientLogout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      // call backend to clear CloudFront cookies (credentials included)
+      await fetch(`${BACKEND_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.warn("Logout request failed", err);
+    } finally {
+      // clear client-side auth state and redirect to login
+      clientLogout();
+      router.replace("/login");
+    }
+  };
 
   // const searchInput = (
   //   <Input
@@ -87,6 +108,9 @@ export const Navbar = () => {
             <GithubIcon className="text-default-500" />
           </Link>
           <ThemeSwitch />
+          <Button variant="ghost" onPress={handleLogout}>
+            Logout
+          </Button>
         </NavbarItem>
         {/* <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem> */}
       </NavbarContent>
@@ -117,6 +141,15 @@ export const Navbar = () => {
               </NextLink>
             </NavbarMenuItem>
           ))}
+
+          <NavbarMenuItem>
+            <button
+              onClick={() => handleLogout()}
+              className="w-full text-left px-2 py-1 rounded hover:bg-default-100"
+            >
+              Logout
+            </button>
+          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </HeroUINavbar>
