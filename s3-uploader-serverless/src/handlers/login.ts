@@ -50,7 +50,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
     const cfDomain = process.env.CLOUDFRONT_DOMAIN;
 
     // Basic simple headers for CORS (keeps compatibility with clients)
-    const simpleHeaders: Record<string, string> = getCorsHeaders();
+    const simpleHeaders: Record<string, string | boolean> = getCorsHeaders();
 
     // multiValueHeaders allows returning multiple Set-Cookie headers via API Gateway / Lambda proxy
     const multiValueHeaders: Record<string, string[]> = {};

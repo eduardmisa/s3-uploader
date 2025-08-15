@@ -80,6 +80,10 @@ build:
       type: linked
       setNodeOptions: true
 
+custom:
+  allowedOrigins:
+    - ${env:FRONTEND_DOMAIN}
+
 functions:
   getPresignedUrl:
     handler: src/handlers/getPresignedUrl.getPresignedUrl
@@ -88,7 +92,12 @@ functions:
           path: upload
           method: post
           cors:
-            origin: "*"
+            origins: ${self:custom.allowedOrigins}
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
+            cacheControl: max-age=600
 
   listS3Files:
     handler: src/handlers/listFiles.listFiles
@@ -97,7 +106,11 @@ functions:
           path: files
           method: get
           cors:
-            origin: "*"
+            origins: ${self:custom.allowedOrigins}
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
 
   generateThumbnails:
     handler: src/handlers/generateThumbnails.generateThumbnails
@@ -106,7 +119,11 @@ functions:
           path: thumbnails/generate
           method: post
           cors:
-            origin: "*"
+            origins: ${self:custom.allowedOrigins}
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
 
   login:
     handler: src/handlers/login.login
@@ -115,7 +132,11 @@ functions:
           path: auth/login
           method: post
           cors:
-            origin: "*"
+            origins: ${self:custom.allowedOrigins}
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
 
   logout:
     handler: src/handlers/logout.logout
@@ -124,7 +145,11 @@ functions:
           path: auth/logout
           method: post
           cors:
-            origin: "*"
+            origins: ${self:custom.allowedOrigins}
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
 
 resources:
   Resources:
