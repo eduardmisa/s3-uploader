@@ -2,18 +2,38 @@ import { ListObjectsV2Command, ListObjectsV2CommandOutput } from "@aws-sdk/clien
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { s3Client, S3_BUCKET_NAME, CLOUDFRONT_DOMAIN } from "../lib/s3-utils";
 
+/**
+ * Lists all files in the S3 bucket. Uses pagination (ListObjectsV2) to ensure
+ * we retrieve more than the 1000-object default limit.
+ */
 export const listFiles: APIGatewayProxyHandler = async () => {
   try {
-    const command: ListObjectsV2Command = new ListObjectsV2Command({
-      Bucket: S3_BUCKET_NAME,
-    });
+    const allObjects: NonNullable<ListObjectsV2CommandOutput["Contents"]> = [];
+    let continuationToken: string | undefined = undefined;
 
-    const response: ListObjectsV2CommandOutput = await s3Client.send(command);
+    // Paginate through all objects in the bucket
+    do {
+      const command: ListObjectsV2Command = new ListObjectsV2Command({
+        Bucket: S3_BUCKET_NAME,
+        ContinuationToken: continuationToken,
+      });
+
+      const response: ListObjectsV2CommandOutput = await s3Client.send(command);
+
+      if (response.Contents && response.Contents.length > 0) {
+        allObjects.push(...response.Contents);
+      }
+
+      // If truncated, use NextContinuationToken for the next request
+      continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (continuationToken);
+
     const baseUrl = CLOUDFRONT_DOMAIN
       ? `https://${CLOUDFRONT_DOMAIN}`
       : `https://${S3_BUCKET_NAME}.s3.${process.env.DEPLOY_REGION}.amazonaws.com`;
-    const allFileUrls = (response.Contents || [])
-      .filter((object) => object.Key && !object.Key.endsWith("/")) // Exclude directories
+
+    const allFileUrls = (allObjects || [])
+      .filter((object) => object.Key && !object.Key.endsWith("/")) // Exclude "directory" markers
       .map((object) => `${baseUrl}/${object.Key}`);
 
     const fileUrls = allFileUrls.filter((url) => !url.includes("-thumbnail."));
