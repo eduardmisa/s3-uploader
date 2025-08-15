@@ -2,8 +2,9 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { s3Client, S3_BUCKET_NAME } from "../lib/s3-utils";
+import { withAuth } from "../lib/auth";
 
-export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
+export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
     const { fileName, contentType, filePathPrefix } = JSON.parse(event.body || "{}");
 
@@ -48,4 +49,4 @@ export const getPresignedUrl: APIGatewayProxyHandler = async (event) => {
       },
     };
   }
-};
+});

@@ -10,8 +10,9 @@ import {
   buildThumbnailKey,
   getObjectBuffer,
 } from "../lib/s3-utils";
+import { withAuth } from "../lib/auth";
 
-export const generateThumbnails: APIGatewayProxyHandler = async (event) => {
+export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
     if (!S3_BUCKET_NAME) {
       return {
@@ -163,4 +164,4 @@ export const generateThumbnails: APIGatewayProxyHandler = async (event) => {
       },
     };
   }
-};
+});

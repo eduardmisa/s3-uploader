@@ -27,6 +27,17 @@ provider:
     DEPLOY_REGION: ${env:DEPLOY_REGION}
     S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
     CLOUDFRONT_DOMAIN: ${env:CLOUDFRONT_DOMAIN}
+    # Auth related environment (set in your .env.* files or CI)
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}
+    AUTH_USERS: ${env:AUTH_USERS}
+    ADMIN_EMAIL: ${env:ADMIN_EMAIL}
+    ADMIN_PASSWORD_HASH: ${env:ADMIN_PASSWORD_HASH}
+    ADMIN_PASSWORD: ${env:ADMIN_PASSWORD}
+    ADMIN_NAME: ${env:ADMIN_NAME}
+    # CloudFront signed cookies (private key should be stored securely in production)
+    CLOUDFRONT_KEY_PAIR_ID: ${env:CLOUDFRONT_KEY_PAIR_ID}
+    CLOUDFRONT_PRIVATE_KEY: ${env:CLOUDFRONT_PRIVATE_KEY}
 
 build:
   esbuild:
@@ -64,6 +75,15 @@ functions:
     events:
       - http:
           path: thumbnails/generate
+          method: post
+          cors:
+            origin: "*"
+
+  login:
+    handler: src/handlers/login.login
+    events:
+      - http:
+          path: auth/login
           method: post
           cors:
             origin: "*"

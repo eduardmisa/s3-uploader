@@ -1,12 +1,13 @@
 import { ListObjectsV2Command, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { s3Client, S3_BUCKET_NAME, CLOUDFRONT_DOMAIN } from "../lib/s3-utils";
+import { withAuth } from "../lib/auth";
 
 /**
  * Lists all files in the S3 bucket. Uses pagination (ListObjectsV2) to ensure
  * we retrieve more than the 1000-object default limit.
  */
-export const listFiles: APIGatewayProxyHandler = async () => {
+export const listFiles: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
     const allObjects: NonNullable<ListObjectsV2CommandOutput["Contents"]> = [];
     let continuationToken: string | undefined = undefined;
@@ -61,4 +62,4 @@ export const listFiles: APIGatewayProxyHandler = async () => {
       },
     };
   }
-};
+});

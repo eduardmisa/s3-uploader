@@ -11,6 +11,8 @@ import "react-image-gallery/styles/css/image-gallery.css";
 import "@/styles/carousel.css";
 import { SideNavProvider } from "@/hooks/useSideNav";
 
+import { AuthProvider, AuthGuard } from "@/lib/auth";
+
 const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -20,9 +22,13 @@ export default function App({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider navigate={router.push}>
         <NextThemesProvider attribute="class" defaultTheme="light">
-          <SideNavProvider>
-            <Component {...pageProps} />
-          </SideNavProvider>
+          <AuthProvider>
+            <AuthGuard>
+              <SideNavProvider>
+                <Component {...pageProps} />
+              </SideNavProvider>
+            </AuthGuard>
+          </AuthProvider>
         </NextThemesProvider>
       </HeroUIProvider>
     </QueryClientProvider>
