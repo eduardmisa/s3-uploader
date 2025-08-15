@@ -9,6 +9,8 @@ export const login: APIGatewayProxyHandler = async (event) => {
     const email = body.email && String(body.email).toLowerCase();
     const password = body.password && String(body.password);
 
+    console.log("Payload", { email, password });
+
     if (!email || !password) {
       return {
         statusCode: 400,
@@ -22,6 +24,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
 
     const user = getUserByEmail(email);
     if (!user) {
+      console.log("Invalid Email");
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),
@@ -32,8 +35,11 @@ export const login: APIGatewayProxyHandler = async (event) => {
       };
     }
 
+    console.log("Target User", user);
+
     const ok = await comparePassword(password, user.passwordHash);
     if (!ok) {
+      console.log("Invalid Password");
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),

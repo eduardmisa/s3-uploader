@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "serverless dev",
-    "deploy:dev": "export $(cat .env.dev | xargs) && serverless deploy --stage dev --region ap-southeast-1 --verbose",
-    "deploy:prod": "export $(cat .env.prod | xargs) && serverless deploy --stage prod --region ap-southeast-1 --verbose",
+    "deploy:dev": "bash -lc 'set -a && [ -f .env.dev ] && . .env.dev; set +a; serverless deploy --stage dev --region ap-southeast-1 --verbose'",
+    "deploy:prod": "bash -lc 'set -a && [ -f .env.prod ] && . .env.prod; set +a; serverless deploy --stage prod --region ap-southeast-1 --verbose'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

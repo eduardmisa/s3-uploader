@@ -27,17 +27,44 @@ provider:
     DEPLOY_REGION: ${env:DEPLOY_REGION}
     S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
     CLOUDFRONT_DOMAIN: ${env:CLOUDFRONT_DOMAIN}
-    # Auth related environment (set in your .env.* files or CI)
-    JWT_SECRET: ${env:JWT_SECRET}
-    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}
-    AUTH_USERS: ${env:AUTH_USERS}
-    ADMIN_EMAIL: ${env:ADMIN_EMAIL}
-    ADMIN_PASSWORD_HASH: ${env:ADMIN_PASSWORD_HASH}
-    ADMIN_PASSWORD: ${env:ADMIN_PASSWORD}
-    ADMIN_NAME: ${env:ADMIN_NAME}
-    # CloudFront signed cookies (private key should be stored securely in production)
-    CLOUDFRONT_KEY_PAIR_ID: ${env:CLOUDFRONT_KEY_PAIR_ID}
-    CLOUDFRONT_PRIVATE_KEY: ${env:CLOUDFRONT_PRIVATE_KEY}
+    # Auth related environment (HARD-CODED per request)
+    JWT_SECRET: "e454f316420796e12037da0ea50c06490cfb5dfba5c7c23d406d04ecf647986e"
+    JWT_EXPIRES_IN: "7d"
+    AUTH_USERS: ""
+    ADMIN_EMAIL: "eduardmisa"
+    ADMIN_PASSWORD: "eduardmisa2025"
+    ADMIN_PASSWORD_HASH_B64: "JDJhJDEwJHpLUnNjanczRW9tMkpqM1FmYS9Pc2VsNDJNUjF1aTFvaUhOYTJ3M0FXd1JDV2xTTGZuOHMu"
+    ADMIN_NAME: "eduard"
+    # CloudFront signed cookies (HARD-CODED private key; consider Secrets Manager for production)
+    CLOUDFRONT_KEY_PAIR_ID: "K236INWIAMWZJX"
+    CLOUDFRONT_PRIVATE_KEY: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDLthz4EDHcKcnN
+      VR5naZpeswEkIE2IGuUvCMpLVVYlBnhS2e/GjPtfDvSN6O/L8SI9luLE7zGKinyl
+      O9rn4yO0P9YYKL3p/y2t1MP8cJZg/TkxtKA0Jr0usDFKIRqqAqQP7s/EweFI2H8s
+      KHt4UZsXC89oV6HXtfK2ClLxXJ/NOojCw7t083RQaLN+b2q42kCixMML7N4GhK4o
+      Z3zETZjk1ibK75iygA/uhf1vqdifcNZSn7pwRwoFIsowxDVj00C2Wav3QaXNjguM
+      Iv4vlJZujbp6QLLHR+EQyVwt0O7McSOi4aSDjyhak25KKH2bB1P5Qv5i/vva/DbH
+      fIfck7mTAgMBAAECggEAR3P34kzv6D0iIystkHFaq8fW6SCJgWmJpP9M0bK7lh4Y
+      W1tFPtwZmcSppBMl9V99tqOzpAcQVftwcBa4GGk0D1fq1SuJPcf7ckM0gVnObXO0
+      uYoVPWWvKu6zQ0CsVSC7AjmuV+H3jvEdXlROxqu9Hg7O79b5FiwkV5T0deOay8WQ
+      +Mv0qCnvs49exeHWfU2Qta9o7gaeplE5ttRzw3lQ+CPydg5ul+gbwyPiztYaNJ04
+      kLZUjn80mW2EZNsrppEro/fHdnCGKd2S6bk8yhrXqlv+ivFx9jO2Lyq5gynqZpJu
+      vxvP7cB1MBKd2MBSfR7Pjtody8PA+AeqV7ZZgwHVPQKBgQD5h46CDpWevUfHpIiu
+      EqJFTEJvqJw5UZqtp9uQ3tbgR25+b3ITEmrbpx81x2g+Rcavsi96EmQGyxCSJPVd
+      Xz95O7XZ//NefyUOzpkKM1GI+LA6CpETsYr7RCEZWn9+mB9WlKbFRxL0rR0Ujss8
+      YLGlrs6SCaQafF/QNqSrna3IjwKBgQDQ/mdLXJfeNgshCUZSo7ZdM9y1S4srU0Pi
+      WuRqoWFEcIPA/cLiSF6en8BLqqyDQwwZkHm5wDU4mNMdstfrg+WrR6neOZFp6JkC
+      oNamYIFrYh/A9jcFF+920fQkn+KS5+LYOZseYo/kUCVzTYA+Mwri3UgncBKoWmk2
+      lHz+yBLYvQKBgECvWEz0tOqSjLH/QANIB1LJgwto/R6Kvfs4YV27tp4rRkR2ZW72
+      Pkc0mo2ZZLeH5QqUuWP+snlkWKZZ+FU9JLortWeOxyr+8L9W5StUxFUqipxxMsyV
+      IL8kGSR2ZkiN7MnH/Td0xkAxRDGZFqxPMJ4Po7MN1sGa7keOcr+eP3eXAoGBAIKC
+      vEKlmfkcSqrgvdeRgKqHXoagnFH792J9XDLygGla0gxM68yfYOcx38Xg2UZHMmEs
+      hbdnvlSPqxbavlfG0D+7yuqJjLNUm2i2xBS2I1vJtQatOwKlRdcvmYTdi4It6M0a
+      fDHnXvA21IxCk5lECsJNaWenZx9XBmkdJUl967cJAoGAQIyA81SALEku9JMdgHgl
+      BeTd9hx6oFf+lmJBKBVkBiZmRmzLBGDBIln8eSs1Rg5lrYgM8RMwAMvqlGsjVh59
+      dWaUMbwZCKNCvIaJdvoZ3X8crRFKp2FTY8lqE6laO//fzcDjpnkYau6tByYU8Uz+
+      IKZjZ1ldWnKEn++OXvHnbm0=
 
 build:
   esbuild:
