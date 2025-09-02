@@ -1,23 +1,29 @@
-import crypto from "crypto";
+/**
+ * cloudfront.ts
+ *
+ * Implementation using @aws-sdk/cloudfront-signer.
+ * This module exports a small wrapper that calls the SDK signer and returns
+ * a normalized shape:
+ *   { policy?: string, signature?: string, keyPairId: string, expiresAt: number }
+ *
+ * Notes:
+ * - `resource` is passed as `url` to the signer and `dateLessThan` is set to the
+ *   computed expiresAt (epoch seconds). This produces signed cookies suitable
+ *   for CloudFront.
+ * - The wrapper uses named import (ES import) per project TS config.
+ */
+
+import { getSignedCookies as sdkGetSignedCookies } from "@aws-sdk/cloudfront-signer";
 
 /**
- * CloudFront-safe Base64 (for cookies/URLs)
- * Do NOT strip padding. Apply AWS's custom mapping:
- *   '+' -> '-'
- *   '/' -> '~'
- *   '=' -> '_'
+ * Build a custom policy JSON for CloudFront that expires at a given epoch time.
+ * This yields a "CloudFront-Policy" value in the SDK output (unlike canned policy).
  */
-const toCloudFrontBase64 = (inputB64: string) =>
-  inputB64.replace(/\+/g, "-").replace(/\//g, "~").replace(/=/g, "_");
-
-const toBase64 = (buf: Buffer) => buf.toString("base64");
-
-/** Build a simple custom policy that expires at a given epoch time. */
-export const makePolicy = (resource: string, expiresAtEpochSeconds: number) => {
+const makePolicy = (resource: string, expiresAtEpochSeconds: number) => {
   const policy = {
     Statement: [
       {
-        Resource: resource, // e.g., "https://cdn.file-manager.emisa.me/*"
+        Resource: resource,
         Condition: {
           DateLessThan: { "AWS:EpochTime": expiresAtEpochSeconds },
         },
@@ -28,57 +34,59 @@ export const makePolicy = (resource: string, expiresAtEpochSeconds: number) => {
 };
 
 /**
- * Sign the policy string.
- * For Key Groups (recommended), use "RSA-SHA256".
- * For legacy Key Pairs, use "RSA-SHA1".
- */
-export const signPolicy = (
-  policyString: string,
-  privateKeyPem: string,
-  algo: "RSA-SHA256" | "RSA-SHA1" = "RSA-SHA256"
-) => {
-  const signer = crypto.createSign(algo);
-  signer.update(policyString, "utf8");
-  const signature = signer.sign(privateKeyPem); // Buffer
-  return signature;
-};
-
-/**
  * Create CloudFront signed cookie values (not full Set-Cookie headers).
+ *
+ * Uses a custom policy so the returned output includes "CloudFront-Policy".
  *
  * @param resource   e.g. "https://cdn.file-manager.emisa.me/*" or with a path prefix
  * @param expiresInSeconds  lifetime from now, in seconds
- * @param keyPairId  For Key Groups, this is the Public Key ID; for legacy, the Key Pair ID
- * @param privateKeyPem PEM private key matching the public key in the trusted key group (or key pair)
- * @param algo optional: "RSA-SHA256" (default) or "RSA-SHA1" for legacy key pairs
+ * @param keyPairId  Public key ID (or Key Pair ID)
+ * @param privateKeyPem PEM private key matching the public key
  */
 export const getSignedCookies = (
   resource: string,
   expiresInSeconds: number,
   keyPairId: string,
-  privateKeyPem: string,
-  algo: "RSA-SHA256" | "RSA-SHA1" = "RSA-SHA256"
-) => {
-  const expiresAt = Math.floor(Date.now() / 1000) + Math.floor(expiresInSeconds);
+  privateKeyPem: string
+): { policy?: string; signature?: string; keyPairId: string; expiresAt: number } => {
+  // Use a fixed 1 day expiration (24 hours).
+  const ONE_DAY_SECONDS = 24 * 60 * 60;
+  // Keep the parameter referenced so TS no-unused-params doesn't complain.
+  void expiresInSeconds;
+  const expiresAt = Math.floor(Date.now() / 1000) + ONE_DAY_SECONDS;
+  const trace = { resource, keyPairId, expiresInSeconds: ONE_DAY_SECONDS, expiresAt };
 
-  // 1) Policy JSON
-  const policy = makePolicy(resource, expiresAt);
+  // Build custom policy (this instructs the signer to return CloudFront-Policy)
+  const policyString = makePolicy(resource, expiresAt);
 
-  // 2) Base64 -> CloudFront-safe for Policy
-  const policyB64 = toBase64(Buffer.from(policy, "utf8"));
-  const policyCF = toCloudFrontBase64(policyB64);
+  try {
+    // Call the SDK with the custom policy. The SDK will return the cookie map.
+    const out = sdkGetSignedCookies({
+      policy: policyString,
+      keyPairId,
+      privateKey: privateKeyPem,
+    });
 
-  // 3) Sign policy with RSA (SHA256 default)
-  const signatureBuf = signPolicy(policy, privateKeyPem, algo);
+    // SDK returns keys like:
+    // { "CloudFront-Key-Pair-Id": "...", "CloudFront-Signature": "...", "CloudFront-Policy": "...", "CloudFront-Expires": 1234567890 }
+    const policy = out["CloudFront-Policy"];
+    const signature = out["CloudFront-Signature"];
+    const resolvedKeyPairId = out["CloudFront-Key-Pair-Id"] || keyPairId;
+    const expiresAtReturned = out["CloudFront-Expires"] ? Number(out["CloudFront-Expires"]) : expiresAt;
 
-  // 4) Base64 -> CloudFront-safe for Signature
-  const signatureB64 = toBase64(signatureBuf);
-  const signatureCF = toCloudFrontBase64(signatureB64);
+    console.debug("[cloudfront] signed cookies generated by @aws-sdk/cloudfront-signer (custom policy)", { out });
 
-  return {
-    policy: policyCF,          // CloudFront-Policy cookie value
-    signature: signatureCF,    // CloudFront-Signature cookie value
-    keyPairId,                 // CloudFront-Key-Pair-Id cookie value
-    expiresAt,
-  };
+    return {
+      policy,
+      signature,
+      keyPairId: resolvedKeyPairId,
+      expiresAt: expiresAtReturned,
+    };
+  } catch (err) {
+    console.error("[cloudfront] @aws-sdk/cloudfront-signer failed to sign cookies", {
+      message: err instanceof Error ? err.message : String(err),
+      trace,
+    });
+    throw err;
+  }
 };

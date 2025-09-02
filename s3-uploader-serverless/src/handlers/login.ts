@@ -45,9 +45,13 @@ export const login: APIGatewayProxyHandler = async (event) => {
     const token = signJwt({ email: user.email, name: user.name });
 
     // If CloudFront private key and key pair id are configured, create signed cookies
-    const cfPrivateKey = process.env.CLOUDFRONT_PRIVATE_KEY || process.env.CLOUDFRONT_PRIVATE_KEY_PEM;
+    const cfPrivateKey = process.env.CLOUDFRONT_PRIVATE_KEY
     const cfKeyPairId = process.env.CLOUDFRONT_KEY_PAIR_ID || process.env.CLOUDFRONT_PUBLIC_KEY_ID;
     const cfDomain = process.env.CLOUDFRONT_DOMAIN;
+
+    console.debug("cfPrivateKey", cfPrivateKey);
+    console.debug("cfKeyPairId", cfKeyPairId);
+    console.debug("cfDomain", cfDomain);
 
     // Basic simple headers for CORS (keeps compatibility with clients)
     const simpleHeaders: Record<string, string | boolean> = getCorsHeaders();
