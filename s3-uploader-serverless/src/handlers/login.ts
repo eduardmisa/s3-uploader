@@ -4,6 +4,8 @@ import { comparePassword, signJwt } from "../lib/auth";
 import { getSignedCookies } from "../lib/cloudfront";
 import { getCorsHeaders } from "../lib/http-utils";
 
+const SESSION_VALIDITY = 24 * 60 * 60; // 1 Day
+
 export const login: APIGatewayProxyHandler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
@@ -62,10 +64,10 @@ export const login: APIGatewayProxyHandler = async (event) => {
     if (cfPrivateKey && cfKeyPairId && cfDomain) {
       try {
         const resource = `https://${cfDomain}/*`;
-        const cookies = getSignedCookies(resource, 60 * 60, cfKeyPairId, cfPrivateKey);
+        const cookies = getSignedCookies(resource, SESSION_VALIDITY, cfKeyPairId, cfPrivateKey);
 
         // Create cookie strings. Use Secure;HttpOnly;SameSite as appropriate.
-        const cookieOptions = `Path=/; Domain=.file-manager.emisa.me; Secure; HttpOnly; SameSite=Lax; Max-Age=${60 * 60}`;
+        const cookieOptions = `Path=/; Domain=.file-manager.emisa.me; Secure; HttpOnly; SameSite=Lax; Max-Age=${SESSION_VALIDITY}`;
 
         const cookie1 = `CloudFront-Policy=${cookies.policy}; ${cookieOptions}`;
         const cookie2 = `CloudFront-Signature=${cookies.signature}; ${cookieOptions}`;

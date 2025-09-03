@@ -49,12 +49,8 @@ export const getSignedCookies = (
   keyPairId: string,
   privateKeyPem: string
 ): { policy?: string; signature?: string; keyPairId: string; expiresAt: number } => {
-  // Use a fixed 1 day expiration (24 hours).
-  const ONE_DAY_SECONDS = 24 * 60 * 60;
-  // Keep the parameter referenced so TS no-unused-params doesn't complain.
-  void expiresInSeconds;
-  const expiresAt = Math.floor(Date.now() / 1000) + ONE_DAY_SECONDS;
-  const trace = { resource, keyPairId, expiresInSeconds: ONE_DAY_SECONDS, expiresAt };
+  // Compute expiresAt directly from the provided expiresInSeconds (lifetime from now).
+  const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
 
   // Build custom policy (this instructs the signer to return CloudFront-Policy)
   const policyString = makePolicy(resource, expiresAt);
@@ -85,8 +81,7 @@ export const getSignedCookies = (
     };
   } catch (err) {
     console.error("[cloudfront] @aws-sdk/cloudfront-signer failed to sign cookies", {
-      message: err instanceof Error ? err.message : String(err),
-      trace,
+      message: err instanceof Error ? err.message : String(err)
     });
     throw err;
   }
