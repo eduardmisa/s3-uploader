@@ -65,6 +65,7 @@ export const getSignedCookies = (
       policy: policyString,
       keyPairId,
       privateKey: privateKeyPem,
+      url: resource
     });
 
     // SDK returns keys like:
