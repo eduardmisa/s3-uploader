@@ -14,11 +14,10 @@ export const getThumbnailUrl = (url: string) => {
 
     const lastDotIndex = fileNameWithExt.lastIndexOf('.');
     let fileName = fileNameWithExt;
-    let fileExtension = '';
+    const fileExtension = '.jpeg'; // Always JPEG for thumbnails
 
     if (lastDotIndex !== -1) {
       fileName = fileNameWithExt.substring(0, lastDotIndex);
-      fileExtension = fileNameWithExt.substring(lastDotIndex); // e.g., ".jpg"
     }
 
     const thumbnailFileName = `${fileName}-thumbnail${fileExtension}`;

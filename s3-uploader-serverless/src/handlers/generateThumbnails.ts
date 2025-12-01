@@ -90,7 +90,6 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
         const originalBuffer = await getObjectBuffer(key);
 
         let thumbBuffer: Buffer;
-        let contentType = "image/jpeg"; // Always JPEG for thumbnails
 
         if (isImageKey(key)) {
           thumbBuffer = await sharp(originalBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
@@ -112,7 +111,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
           Bucket: S3_BUCKET_NAME,
           Key: thumbKey,
           Body: thumbBuffer,
-          ContentType: contentType,
+          ContentType: "image/jpeg", // Always JPEG for thumbnails
           ACL: "bucket-owner-full-control",
         });
 

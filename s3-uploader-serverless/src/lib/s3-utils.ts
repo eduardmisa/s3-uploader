@@ -55,11 +55,10 @@ export const buildThumbnailKey = (key: string) => {
   const base = lastSlash === -1 ? key : key.slice(lastSlash + 1);
   const dotIndex = base.lastIndexOf('.');
   let name = base;
-  let ext = '';
+  const ext = '.jpeg'; // Always JPEG for thumbnails
 
   if (dotIndex !== -1) {
     name = base.slice(0, dotIndex);
-    ext = base.slice(dotIndex); // includes dot
   }
   
   // Prepend "thumbnails/" to the key and preserve the original directory structure
