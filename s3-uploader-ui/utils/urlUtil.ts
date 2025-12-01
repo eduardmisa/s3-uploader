@@ -1,27 +1,35 @@
 export const getThumbnailUrl = (url: string) => {
   try {
-    // Preserve any query string or hash
-    const idx = url.search(/[#?]/);
-    const base = idx === -1 ? url : url.slice(0, idx);
-    const suffix = idx === -1 ? "" : url.slice(idx);
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/').filter(part => part !== '');
 
-    const parts = base.split("/");
-    const fileName = parts.pop();
+    if (pathParts.length === 0) {
+      return; // No path to process
+    }
 
-    if (!fileName) return false;
+    const fileNameWithExt = pathParts.pop(); // e.g., "Ed_Hazel_1.jpg"
+    if (!fileNameWithExt) {
+      return;
+    }
 
-    const fileSplit = fileName.split(".");
+    const lastDotIndex = fileNameWithExt.lastIndexOf('.');
+    let fileName = fileNameWithExt;
+    let fileExtension = '';
 
-    if (!fileSplit || fileSplit.length < 2) return false;
+    if (lastDotIndex !== -1) {
+      fileName = fileNameWithExt.substring(0, lastDotIndex);
+      fileExtension = fileNameWithExt.substring(lastDotIndex); // e.g., ".jpg"
+    }
 
-    const ext = fileSplit.pop();
-    const fileNameOnly = fileSplit.join(".");
-    const thumbnailFile = `${fileNameOnly}-thumbnail.${ext}`;
+    const thumbnailFileName = `${fileName}-thumbnail${fileExtension}`;
 
-    parts.push(thumbnailFile);
+    // Reconstruct the path with "thumbnails/" after the domain
+    const newPath = ['thumbnails', ...pathParts, thumbnailFileName].join('/');
+    urlObj.pathname = `/${newPath}`;
 
-    return parts.join("/") + suffix;
-  } catch {
+    return urlObj.toString();
+  } catch (error) {
+    console.error("Error constructing thumbnail URL:", error);
     return;
   }
 };
