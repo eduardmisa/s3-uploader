@@ -90,3 +90,16 @@ export const processImageThumbnail = async (urls: string[]): Promise<any> => {
     throw error;
   }
 };
+
+export const deleteAllThumbnails = async (): Promise<any> => {
+  try {
+    await axios.delete(
+      `${BACKEND_API_URL}/thumbnails/delete`,
+      { headers: { ...authHeaders() } },
+    );
+
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+};

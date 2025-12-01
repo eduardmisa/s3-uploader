@@ -8,6 +8,7 @@ import { useCallback } from "react";
 import { ListFilesResult, listFilesFromS3 } from "@/lib/aws-s3";
 import DefaultLayout from "@/layouts/default";
 import { useProcessImageThumbnailMutation } from "@/hooks/useProcessImageThumbnailMutation";
+import { useDeleteAllThumbnailsMutation } from "@/hooks/useDeleteAllThumbnailsMutation";
 import { getThumbnailUrl } from "@/utils/urlUtil";
 
 export default function ThumbnailPage() {
@@ -33,7 +34,8 @@ export default function ThumbnailPage() {
     (url) => !imageThumbnailExists(url),
   );
 
-  const mutation = useProcessImageThumbnailMutation();
+  const processMutation = useProcessImageThumbnailMutation();
+  const deleteMutation = useDeleteAllThumbnailsMutation();
 
   const processThumbnails = async () => {
     const urls = noThumbnails;
@@ -46,10 +48,16 @@ export default function ThumbnailPage() {
       const batch = urls.slice(i, i + batchSize);
 
       try {
-        await mutation.mutateAsync({ urls: batch });
+        await processMutation.mutateAsync({ urls: batch });
       } catch {
         // continue with next batch
       }
+    }
+  };
+
+  const handleDeleteAllThumbnails = async () => {
+    if (window.confirm("Are you sure you want to delete all thumbnails? This action cannot be undone.")) {
+      await deleteMutation.mutateAsync();
     }
   };
 
@@ -102,16 +110,26 @@ export default function ThumbnailPage() {
 
   return (
     <DefaultLayout>
-      <Button
-        className="mb-5"
-        color={canProcessThumbnails ? "success" : "default"}
-        isDisabled={!canProcessThumbnails}
-        isLoading={mutation.isPending}
-        variant="shadow"
-        onPress={processThumbnails}
-      >
-        Process Thumbnails ({noThumbnails?.length})
-      </Button>
+      <div className="flex gap-2 mb-5">
+        <Button
+          color={canProcessThumbnails ? "success" : "default"}
+          isDisabled={!canProcessThumbnails}
+          isLoading={processMutation.isPending}
+          variant="shadow"
+          onPress={processThumbnails}
+        >
+          Process Thumbnails ({noThumbnails?.length})
+        </Button>
+        <Button
+          color="danger"
+          isDisabled={deleteMutation.isPending}
+          isLoading={deleteMutation.isPending}
+          variant="shadow"
+          onPress={handleDeleteAllThumbnails}
+        >
+          Delete All Thumbnails
+        </Button>
+      </div>
 
       <div className="flex gap-5">{renderList()}</div>
     </DefaultLayout>
