@@ -18,8 +18,9 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
     let allThumbnailKeys: { Key: string }[] = [];
 
     do {
-      const listParams: { Bucket: string; ContinuationToken?: string } = {
+      const listParams: { Bucket: string; Prefix: string; ContinuationToken?: string } = {
         Bucket: S3_BUCKET_NAME,
+        Prefix: "thumbnails/",
         ContinuationToken: continuationToken,
       };
 

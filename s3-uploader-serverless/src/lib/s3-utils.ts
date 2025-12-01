@@ -37,12 +37,16 @@ export const buildThumbnailKey = (key: string) => {
   const dir = lastSlash === -1 ? '' : key.slice(0, lastSlash + 1);
   const base = lastSlash === -1 ? key : key.slice(lastSlash + 1);
   const dotIndex = base.lastIndexOf('.');
-  if (dotIndex === -1) {
-    return `${dir}${base}-thumbnail`;
+  let name = base;
+  let ext = '';
+
+  if (dotIndex !== -1) {
+    name = base.slice(0, dotIndex);
+    ext = base.slice(dotIndex); // includes dot
   }
-  const name = base.slice(0, dotIndex);
-  const ext = base.slice(dotIndex); // includes dot
-  return `${dir}${name}-thumbnail${ext}`;
+  
+  // Prepend "thumbnails/" to the key and preserve the original directory structure
+  return `thumbnails/${dir}${name}-thumbnail${ext}`;
 };
 
 /**
