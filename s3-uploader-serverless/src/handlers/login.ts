@@ -18,7 +18,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "Missing email or password" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -28,7 +28,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -40,7 +40,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
       return {
         statusCode: 401,
         body: JSON.stringify({ message: "Invalid credentials" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -56,7 +56,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
     console.debug("cfDomain", cfDomain);
 
     // Basic simple headers for CORS (keeps compatibility with clients)
-    const simpleHeaders: Record<string, string | boolean> = getCorsHeaders();
+    const simpleHeaders: Record<string, string | boolean> = getCorsHeaders(event);
 
     // multiValueHeaders allows returning multiple Set-Cookie headers via API Gateway / Lambda proxy
     const multiValueHeaders: Record<string, string[]> = {};
@@ -93,7 +93,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Login failed", error: error instanceof Error ? error.message : "Unknown error" }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 };

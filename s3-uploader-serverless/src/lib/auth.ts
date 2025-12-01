@@ -37,7 +37,7 @@ export const comparePassword = async (password: string, hash: string): Promise<b
  */
 export const withAuth = (handler: APIGatewayProxyHandler): APIGatewayProxyHandler => {
   return async (event, context, callback): Promise<any> => {
-    const corsHeaders = getCorsHeaders();
+    const corsHeaders = getCorsHeaders(event);
 
     try {
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) as string | undefined;

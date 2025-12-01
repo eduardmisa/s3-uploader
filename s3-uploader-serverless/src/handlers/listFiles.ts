@@ -8,7 +8,7 @@ import { getCorsHeaders } from "../lib/http-utils";
  * Lists all files in the S3 bucket. Uses pagination (ListObjectsV2) to ensure
  * we retrieve more than the 1000-object default limit.
  */
-export const listFiles: APIGatewayProxyHandler = withAuth(async () => {
+export const listFiles: APIGatewayProxyHandler = withAuth(async (event) => {
   try {
     const allObjects: NonNullable<ListObjectsV2CommandOutput["Contents"]> = [];
     let continuationToken: string | undefined = undefined;
@@ -44,7 +44,7 @@ export const listFiles: APIGatewayProxyHandler = withAuth(async () => {
     return {
       statusCode: 200,
       body: JSON.stringify({ fileUrls, imageThumbnailsUrls }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   } catch (error) {
     console.error("Error listing files from S3:", error);
@@ -54,7 +54,7 @@ export const listFiles: APIGatewayProxyHandler = withAuth(async () => {
         message: "Failed to list files from S3",
         error: error instanceof Error ? error.message : "Unknown error",
       }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 });

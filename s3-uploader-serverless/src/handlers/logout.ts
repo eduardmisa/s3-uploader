@@ -6,7 +6,7 @@ import { getCorsHeaders } from "../lib/http-utils";
  * - Returns multiValueHeaders with Set-Cookie entries that clear CloudFront cookies (and any other cookies) by setting Max-Age=0.
  * - Keeps CORS headers to allow browser to accept the response.
  */
-export const logout: APIGatewayProxyHandler = async () => {
+export const logout: APIGatewayProxyHandler = async (event) => {
   try {
     const cookieOptions = `Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0`;
 
@@ -18,7 +18,7 @@ export const logout: APIGatewayProxyHandler = async () => {
       ],
     };
 
-    const headers = getCorsHeaders();
+    const headers = getCorsHeaders(event);
 
     return {
       statusCode: 200,
@@ -31,7 +31,7 @@ export const logout: APIGatewayProxyHandler = async () => {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Logout failed" }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 };

@@ -13,7 +13,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "Missing fileName or contentType in request body" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -28,7 +28,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
     return {
       statusCode: 200,
       body: JSON.stringify({ presignedUrl }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   } catch (error) {
     console.error("Error generating presigned URL:", error);
@@ -38,7 +38,7 @@ export const getPresignedUrl: APIGatewayProxyHandler = withAuth(async (event) =>
         message: "Failed to generate presigned URL",
         error: error instanceof Error ? error.message : "Unknown error",
       }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 });

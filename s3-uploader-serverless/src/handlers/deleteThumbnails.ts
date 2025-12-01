@@ -10,7 +10,7 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
       return {
         statusCode: 500,
         body: JSON.stringify({ message: "S3_BUCKET_NAME is not configured" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -39,7 +39,7 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
       return {
         statusCode: 200,
         body: JSON.stringify({ message: "No thumbnails found to delete." }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -73,14 +73,14 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
     return {
       statusCode: 200,
       body: JSON.stringify({ message: `Successfully deleted ${deletedCount} thumbnails.` }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   } catch (error) {
     console.error("Error deleting thumbnails:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Failed to delete thumbnails", error: error instanceof Error ? error.message : "Unknown error" }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 });

@@ -19,7 +19,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 500,
         body: JSON.stringify({ message: "S3_BUCKET_NAME is not configured" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -31,7 +31,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Request body must include a non-empty array in "keys" or "urls"' }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -39,7 +39,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: `Too many files requested. Max per request is ${BATCH_SIZE}` }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -72,7 +72,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "No valid S3 keys were parsed from the request" }),
-        headers: getCorsHeaders(),
+        headers: getCorsHeaders(event),
       };
     }
 
@@ -137,14 +137,14 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
     return {
       statusCode: 200,
       body: JSON.stringify({ created, errors }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   } catch (error) {
     console.error("Error generating thumbnails:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Failed to generate thumbnails", error: error instanceof Error ? error.message : "Unknown error" }),
-      headers: getCorsHeaders(),
+      headers: getCorsHeaders(event),
     };
   }
 });
