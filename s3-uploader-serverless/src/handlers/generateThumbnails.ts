@@ -90,19 +90,10 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
         const originalBuffer = await getObjectBuffer(key);
 
         let thumbBuffer: Buffer;
-        let contentType = "image/jpeg";
+        let contentType = "image/jpeg"; // Always JPEG for thumbnails
 
         if (isImageKey(key)) {
-          thumbBuffer = await sharp(originalBuffer).resize({ width: 200, withoutEnlargement: true }).toBuffer();
-
-          const extMatch = key.match(/\.(jpe?g|png|webp|gif)$/i);
-          if (extMatch) {
-            const ext = extMatch[1].toLowerCase();
-            if (ext.startsWith("png")) contentType = "image/png";
-            else if (ext.startsWith("webp")) contentType = "image/webp";
-            else if (ext.startsWith("gif")) contentType = "image/gif";
-            else contentType = "image/jpeg";
-          }
+          thumbBuffer = await sharp(originalBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
         } else if (isVideoKey(key)) {
           const frameBuffer = await extractFrameFromVideo(originalBuffer);
           if (!frameBuffer || frameBuffer.length === 0) {
@@ -110,7 +101,6 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
           }
 
           thumbBuffer = await sharp(frameBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
-          contentType = "image/jpeg";
         } else {
           errors.push({ key, error: "Skipped (unsupported file type)" });
           continue;

@@ -23,12 +23,29 @@ const streamToBuffer = async (stream: any): Promise<Buffer> => {
   });
 };
 
+const IMAGE_EXTENSIONS = "jpe?g|png|webp|gif|tif|cr2|nef|orf|sr2|arw|dng|raf|rw2";
+const VIDEO_EXTENSIONS = "mp4|mov|webm|mkv|avi";
+
 export const isImageKey = (key: string) => {
-  return /\.(jpe?g|png|webp|gif)$/i.test(key);
+  return new RegExp(`\\.(${IMAGE_EXTENSIONS})$`, "i").test(key);
+};
+
+export const getImageContentType = (key: string): string => {
+  const extMatch = key.match(new RegExp(`\\.(${IMAGE_EXTENSIONS})$`, "i"));
+  if (extMatch) {
+    const ext = extMatch[1].toLowerCase();
+    if (ext.startsWith("png")) return "image/png";
+    else if (ext.startsWith("webp")) return "image/webp";
+    else if (ext.startsWith("gif")) return "image/gif";
+    else if (ext.startsWith("tif")) return "image/tiff";
+    else if (["cr2", "nef", "orf", "sr2", "arw", "dng", "raf", "rw2"].includes(ext)) return "image/jpeg"; // RAW files often converted to JPEG for thumbnails
+    else return "image/jpeg";
+  }
+  return "application/octet-stream"; // Default or unknown type
 };
 
 export const isVideoKey = (key: string) => {
-  return /\.(mp4|mov|webm|mkv|avi)$/i.test(key);
+  return new RegExp(`\\.(${VIDEO_EXTENSIONS})$`, "i").test(key);
 };
 
 export const buildThumbnailKey = (key: string) => {
