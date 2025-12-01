@@ -25,14 +25,16 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
 
       const listedObjects = await s3Client.send(new ListObjectsV2Command(listParams));
       const thumbnailsInBatch = listedObjects.Contents?.filter(
-        (obj: { Key?: string }) => obj.Key?.includes("-thumbnail.")
-      ).map(({ Key }: { Key?: string }) => ({ Key: Key! })) || [];
+        (obj): obj is { Key: string } => obj.Key !== undefined && obj.Key.includes("-thumbnail.")
+      ).map((obj) => ({ Key: obj.Key as string })) || [];
 
       allThumbnailKeys = allThumbnailKeys.concat(thumbnailsInBatch);
       continuationToken = listedObjects.NextContinuationToken;
     } while (continuationToken);
 
+    console.log("Found thumbnails to delete:", allThumbnailKeys.length);
     if (allThumbnailKeys.length === 0) {
+      console.log("No thumbnails found to delete. Returning early.");
       return {
         statusCode: 200,
         body: JSON.stringify({ message: "No thumbnails found to delete." }),
@@ -43,16 +45,33 @@ export const deleteThumbnails: APIGatewayProxyHandler = withAuth(async (event) =
     const deleteParams = {
       Bucket: S3_BUCKET_NAME,
       Delete: {
-        Objects: allThumbnailKeys,
+        Objects: allThumbnailKeys.map(obj => ({ Key: obj.Key })),
         Quiet: false,
       },
     };
 
-    await s3Client.send(new DeleteObjectsCommand(deleteParams));
+    console.log("Delete parameters:", JSON.stringify(deleteParams, null, 2));
+
+    const BATCH_SIZE = 10;
+    let deletedCount = 0;
+
+    for (let i = 0; i < allThumbnailKeys.length; i += BATCH_SIZE) {
+      const batch = allThumbnailKeys.slice(i, i + BATCH_SIZE);
+      const batchDeleteParams = {
+        Bucket: S3_BUCKET_NAME,
+        Delete: {
+          Objects: batch.map(obj => ({ Key: obj.Key })),
+          Quiet: false,
+        },
+      };
+      console.log(`Deleting batch ${i / BATCH_SIZE + 1} of ${Math.ceil(allThumbnailKeys.length / BATCH_SIZE)}`);
+      await s3Client.send(new DeleteObjectsCommand(batchDeleteParams));
+      deletedCount += batch.length;
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: `Successfully deleted ${allThumbnailKeys.length} thumbnails.` }),
+      body: JSON.stringify({ message: `Successfully deleted ${deletedCount} thumbnails.` }),
       headers: getCorsHeaders(),
     };
   } catch (error) {
