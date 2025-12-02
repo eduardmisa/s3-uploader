@@ -50,10 +50,9 @@ export const processImageThumbnail = async (urls: string[]): Promise<any> => {
 
 export const deleteAllThumbnails = async (): Promise<any> => {
   try {
-    await axios.delete(
-      `${BACKEND_API_URL}/thumbnails/delete`,
-      { headers: { ...authHeaders() } },
-    );
+    await axios.delete(`${BACKEND_API_URL}/thumbnails/delete`, {
+      headers: { ...authHeaders() },
+    });
 
     return { success: true };
   } catch (error) {

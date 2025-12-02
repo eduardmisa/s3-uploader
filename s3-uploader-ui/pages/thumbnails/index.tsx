@@ -56,7 +56,11 @@ export default function ThumbnailPage() {
   };
 
   const handleDeleteAllThumbnails = async () => {
-    if (window.confirm("Are you sure you want to delete all thumbnails? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete all thumbnails? This action cannot be undone.",
+      )
+    ) {
       await deleteMutation.mutateAsync();
     }
   };

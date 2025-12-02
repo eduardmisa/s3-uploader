@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { deleteAllThumbnails } from "@/lib/aws-s3";
 
 export const useDeleteAllThumbnailsMutation = () => {

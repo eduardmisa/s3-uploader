@@ -15,6 +15,7 @@ export const useListS3FilesForSync = () => {
     queryKey: ["s3FilesForSync"],
     queryFn: async () => {
       const response = await axios.get(`${BACKEND_API_URL}/sync/files`);
+
       return response.data.s3Files;
     },
   });
