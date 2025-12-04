@@ -5,6 +5,7 @@ import os from "os";
 import path from "path";
 import { randomUUID } from "crypto";
 import ffmpegPath from "ffmpeg-static";
+import mime from "mime-types";
 
 export const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 export const CLOUDFRONT_DOMAIN = process.env.CLOUDFRONT_DOMAIN;
@@ -17,50 +18,67 @@ const streamToBuffer = async (stream: any): Promise<Buffer> => {
     if (stream instanceof Buffer) {
       return resolve(stream);
     }
-    stream.on('data', (chunk: any) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err: any) => reject(err));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on("data", (chunk: any) => chunks.push(Buffer.from(chunk)));
+    stream.on("error", (err: any) => reject(err));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
   });
 };
 
-const IMAGE_EXTENSIONS = "jpe?g|png|webp|gif|tif|cr2|nef|orf|sr2|arw|dng|raf|rw2";
-const VIDEO_EXTENSIONS = "mp4|mov|webm|mkv|avi";
-
-export const isImageKey = (key: string) => {
-  return new RegExp(`\\.(${IMAGE_EXTENSIONS})$`, "i").test(key);
+/**
+ * Get MIME type from a key (based on extension) using mime-types.
+ */
+const getMimeTypeFromKey = (key: string): string => {
+  const type = mime.lookup(key);
+  return typeof type === "string" && type.length > 0
+    ? type
+    : "application/octet-stream";
 };
 
-export const getImageContentType = (key: string): string => {
-  const extMatch = key.match(new RegExp(`\\.(${IMAGE_EXTENSIONS})$`, "i"));
-  if (extMatch) {
-    const ext = extMatch[1].toLowerCase();
-    if (ext.startsWith("png")) return "image/png";
-    else if (ext.startsWith("webp")) return "image/webp";
-    else if (ext.startsWith("gif")) return "image/gif";
-    else if (ext.startsWith("tif")) return "image/tiff";
-    else if (["cr2", "nef", "orf", "sr2", "arw", "dng", "raf", "rw2"].includes(ext)) return "image/jpeg"; // RAW files often converted to JPEG for thumbnails
-    else return "image/jpeg";
-  }
-  return "application/octet-stream"; // Default or unknown type
+export const isImageKey = (key: string) => {
+  const mimeType = getMimeTypeFromKey(key);
+  return mimeType.startsWith("image/");
 };
 
 export const isVideoKey = (key: string) => {
-  return new RegExp(`\\.(${VIDEO_EXTENSIONS})$`, "i").test(key);
+  const mimeType = getMimeTypeFromKey(key);
+  return mimeType.startsWith("video/");
+};
+
+/**
+ * Get the appropriate content type for an *image* response.
+ * For image keys, we return the detected image MIME type.
+ * For video keys (when generating thumbnails), we default to JPEG.
+ * Otherwise we fall back to application/octet-stream.
+ */
+export const getImageContentType = (key: string): string => {
+  const mimeType = getMimeTypeFromKey(key);
+
+  if (mimeType.startsWith("image/")) {
+    return mimeType;
+  }
+
+  // If the source is a video but we're generating an image thumbnail for it,
+  // keep returning JPEG thumbnails.
+  if (mimeType.startsWith("video/")) {
+    return "image/jpeg";
+  }
+
+  return "application/octet-stream";
 };
 
 export const buildThumbnailKey = (key: string) => {
   // preserve directory path, append -thumbnail before the last extension
-  const lastSlash = key.lastIndexOf('/');
-  const dir = lastSlash === -1 ? '' : key.slice(0, lastSlash + 1);
+  const lastSlash = key.lastIndexOf("/");
+  const dir = lastSlash === -1 ? "" : key.slice(0, lastSlash + 1);
   const base = lastSlash === -1 ? key : key.slice(lastSlash + 1);
-  const dotIndex = base.lastIndexOf('.');
+  const dotIndex = base.lastIndexOf(".");
   let name = base;
-  const ext = '.jpeg'; // Always JPEG for thumbnails
+  const ext = ".jpeg"; // Always JPEG for thumbnails
 
   if (dotIndex !== -1) {
     name = base.slice(0, dotIndex);
   }
-  
+
   // Prepend "thumbnails/" to the key and preserve the original directory structure
   return `thumbnails/${dir}${name}-thumbnail${ext}`;
 };
@@ -74,8 +92,6 @@ export const extractFrameFromVideo = async (buffer: Buffer): Promise<Buffer> => 
     throw new Error("ffmpeg binary not found (ffmpeg-static returned null)");
   }
 
-  // Write the video buffer to a temp file and have ffmpeg extract a single frame to a temp image file.
-  // This avoids pipe-related demuxing issues for some files.
   const tmpDir = os.tmpdir();
   const videoPath = path.join(tmpDir, `video-${randomUUID()}.tmp`);
   const imagePath = path.join(tmpDir, `frame-${randomUUID()}.jpg`);
@@ -97,7 +113,6 @@ export const extractFrameFromVideo = async (buffer: Buffer): Promise<Buffer> => 
 
     const ff = spawn(ffmpegPath as string, args) as ChildProcessWithoutNullStreams;
 
-    // Collect stderr for debug, but we don't stream stdout since ffmpeg writes to a file
     let stderr = "";
     ff.stderr.on("data", (d: Buffer | string) => {
       stderr += d.toString();
@@ -111,12 +126,9 @@ export const extractFrameFromVideo = async (buffer: Buffer): Promise<Buffer> => 
       });
     });
 
-    // Read generated image
     const imgBuffer = await fs.readFile(imagePath);
-
     return imgBuffer;
   } finally {
-    // Best-effort cleanup
     try {
       await fs.unlink(videoPath).catch(() => {});
       await fs.unlink(imagePath).catch(() => {});

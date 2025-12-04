@@ -466,23 +466,6 @@ export default function SyncPage() {
                     </li>
                   )}
                 />
-                {/* 
-                {syncFiles.map((file, index) => (
-                  <li key={index} className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md">
-                    <span className={`font-bold text-sm ${file.status === "new" ? "text-green-500" : file.status === "modified" ? "text-yellow-500" : file.status === "skipped" ? "text-gray-500" : "text-blue-500"} w-24 flex-shrink-0 flex items-center gap-1`}>
-                      {file.status === "new" && <span className="text-green-500">▲</span>}
-                      {file.status === "modified" && <span className="text-yellow-500">●</span>}
-                      {file.status === "skipped" && <span className="text-gray-500">━</span>}
-                      {file.status === "uploaded" && <span className="text-blue-500">✔</span>}
-                      {file.status === "uploading" && <span className="text-blue-500">...</span>}
-                      {file.status.toUpperCase()}
-                    </span>
-                    <span className="text-gray-700 dark:text-gray-200 text-sm truncate flex-grow">{file.path}</span>
-                    {file.progress !== undefined && file.progress < 100 && (
-                      <span className="text-sm text-blue-500 flex-shrink-0">({file.progress.toFixed(0)}%)</span>
-                    )}
-                  </li>
-                ))} */}
               </ul>
             </CardBody>
             <CardFooter />

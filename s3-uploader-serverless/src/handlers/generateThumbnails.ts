@@ -49,16 +49,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
 
       try {
         const url = new URL(val);
-        if (S3_BUCKET_NAME && url.hostname.includes(S3_BUCKET_NAME)) {
-          return url.pathname.replace(/^\//, "");
-        }
-        if (process.env.CLOUDFRONT_DOMAIN && url.hostname.includes(process.env.CLOUDFRONT_DOMAIN)) {
-          return url.pathname.replace(/^\//, "");
-        }
-        if (/s3[.-]amazonaws\.com$/i.test(url.hostname) || url.hostname.endsWith(".s3.amazonaws.com")) {
-          return url.pathname.replace(/^\//, "");
-        }
-        return url.pathname.replace(/^\//, "");
+        return decodeURIComponent(url.pathname.replace(/^\//, ""))
       } catch (e) {
         return val;
       }
