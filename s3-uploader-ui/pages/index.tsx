@@ -5,12 +5,31 @@ import { Tooltip } from "@heroui/tooltip";
 import { VirtuosoMasonry } from "@virtuoso.dev/masonry";
 import React, { useCallback, useMemo, useState } from "react";
 import { Modal, ModalContent, ModalBody, useDisclosure } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
 
 import DefaultLayout from "@/layouts/default";
 import { title } from "@/components/primitives";
 import { useSideNavBar } from "@/hooks/useSideNav";
 import { Carousel } from "@/components/Carousel";
 import { getThumbnailUrl } from "@/utils/urlUtil";
+
+type FileType = "All" | "Pictures" | "Videos" | "Others";
+
+const getFileType = (filename: string): FileType => {
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff"];
+  const videoExtensions = ["mp4", "mov", "avi", "mkv", "webm"];
+  const extension = filename.split(".").pop()?.toLowerCase();
+
+  if (!extension) return "Others";
+
+  if (imageExtensions.includes(extension)) {
+    return "Pictures";
+  }
+  if (videoExtensions.includes(extension)) {
+    return "Videos";
+  }
+  return "Others";
+};
 
 export default function IndexPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -22,6 +41,22 @@ export default function IndexPage() {
     setSelectedImageUrl(url);
     onOpen();
   };
+
+  const [filterType, setFilterType] = useState<FileType>("All");
+
+  const filteredItems = useMemo(() => {
+    if (filterType === "All") {
+      return currentFolderImages || [];
+    }
+    return (
+      currentFolderImages?.filter((url) => {
+        const filename = url.split("/").pop() || "";
+        return getFileType(filename) === filterType;
+      }) || []
+    );
+  }, [currentFolderImages, filterType]);
+
+  const items = useMemo(() => filteredItems, [filteredItems]);
 
   const CardImage: React.FC<{ data: string }> = useCallback(
     ({ data }) => {
@@ -65,8 +100,6 @@ export default function IndexPage() {
     [isOpen],
   );
 
-  const items = useMemo(() => currentFolderImages || [], [currentFolderImages]);
-
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [columnCount, setColumnCount] = React.useState<number>(1);
 
@@ -106,6 +139,29 @@ export default function IndexPage() {
           <span className={title()}>
             folder. ({currentFolderImages?.length || 0})
           </span>
+        </div>
+        <div className="flex w-full flex-col items-end">
+          <Select
+            label="Filter by type"
+            className="max-w-xs mx-auto"
+            selectedKeys={[filterType]}
+            onSelectionChange={(keys) => {
+              setFilterType(Array.from(keys)[0] as FileType);
+            }}
+          >
+            <SelectItem key="All">
+              All
+            </SelectItem>
+            <SelectItem key="Pictures">
+              Pictures
+            </SelectItem>
+            <SelectItem key="Videos">
+              Videos
+            </SelectItem>
+            <SelectItem key="Others">
+              Others
+            </SelectItem>
+          </Select>
         </div>
       </section>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
