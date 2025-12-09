@@ -8,44 +8,47 @@ interface ProcessImageThumbnailMutationVariables {
 }
 
 const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-
-    img.src = imageUrl;
-
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const MAX_WIDTH = 200;
-      const scaleSize = MAX_WIDTH / img.width;
-
-      canvas.width = MAX_WIDTH;
-      canvas.height = img.height * scaleSize;
-
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        reject(new Error("Could not get canvas context"));
-
-        return;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(imageUrl, { mode: "cors" });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
       }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const imageBlob = await response.blob();
 
-      canvas.toBlob(
-        (blob) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(imageBlob);
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 200;
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob);
           } else {
             reject(new Error("Canvas toBlob failed"));
           }
-        },
-        "image/jpeg",
-        0.9,
-      ); // Quality 0.9 for JPEG
-    };
+        }, "image/jpeg", 0.9); // Quality 0.9 for JPEG
+        URL.revokeObjectURL(img.src); // Clean up the object URL
+      };
 
-    img.onerror = (error) => {
-      reject(new Error(`Failed to load image: ${imageUrl}, error: ${error}`));
-    };
+      img.onerror = (error) => {
+        reject(new Error(`Failed to load image: ${imageUrl}, error: ${error}`));
+      };
+    } catch (error: any) {
+      reject(error);
+    }
   });
 };
 
