@@ -10,8 +10,6 @@ interface ProcessImageThumbnailMutationVariables {
 const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
-
-    img.crossOrigin = "use-credentials";
     img.src = imageUrl;
 
     img.onload = () => {
