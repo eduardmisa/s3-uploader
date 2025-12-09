@@ -48,7 +48,7 @@ export default function ThumbnailPage() {
       const batch = urls.slice(i, i + batchSize);
 
       try {
-        await processMutation.mutateAsync({ urls: batch });
+        await processMutation.mutateAsync({ items: batch.map(url => ({ url })) });
       } catch {
         // continue with next batch
       }
@@ -70,7 +70,7 @@ export default function ThumbnailPage() {
 
     return (
       <>
-        <Listbox
+        {/* <Listbox
           aria-label="Folders Menu"
           className="p-0 gap-0 divide-y divide-default-300/50 dark:divide-default-100/80 bg-content1 overflow-visible shadow-small rounded-medium"
           color="success"
@@ -105,7 +105,7 @@ export default function ThumbnailPage() {
               {url}
             </ListboxItem>
           ))}
-        </Listbox>
+        </Listbox> */}
       </>
     );
   }, [s3FileData?.fileUrls]);

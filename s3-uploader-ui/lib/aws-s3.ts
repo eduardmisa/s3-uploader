@@ -1,6 +1,18 @@
 import axios from "axios";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+const S3_BUCKET_NAME = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
+const S3_REGION = process.env.NEXT_PUBLIC_S3_REGION;
+
+const s3Client = new S3Client({
+  region: S3_REGION,
+  credentials: {
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY || "",
+  },
+});
 
 /**
  * Return auth header using the token stored in localStorage by the AuthProvider.
@@ -54,6 +66,32 @@ export const deleteAllThumbnails = async (): Promise<any> => {
       headers: { ...authHeaders() },
     });
 
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const uploadThumbnailToS3 = async (
+  file: File | Blob,
+  key: string,
+): Promise<any> => {
+  try {
+    const parallelUploads3 = new Upload({
+      client: s3Client,
+      params: {
+        Bucket: S3_BUCKET_NAME,
+        Key: key,
+        Body: file,
+        ContentType: "image/jpeg", // Always JPEG for thumbnails
+        ACL: "bucket-owner-full-control",
+      },
+      queueSize: 4, // optional total number of concurrent uploads
+      partSize: 1024 * 1024 * 5, // optional size of each part, in bytes, at least 5MB
+      leavePartsOnError: false, // optional manually handle dropped parts
+    });
+
+    await parallelUploads3.done();
     return { success: true };
   } catch (error) {
     throw error;
