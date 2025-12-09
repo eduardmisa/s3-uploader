@@ -48,3 +48,40 @@ export const getS3KeyFromUrl = (url: string): string => {
     return "";
   }
 };
+
+export const isImageUrl = (url: string): boolean => {
+  // A more comprehensive list of image extensions
+  const imageExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".webp",
+    ".tiff",
+    ".ico",
+    ".svg",
+    ".arw",
+    ".cr2",
+    ".crw",
+    ".dng",
+    ".erf",
+    ".kdc",
+    ".mrw",
+    ".nef",
+    ".orf",
+    ".raf",
+    ".raw",
+    ".rw2",
+    ".sr2",
+    ".srf",
+    ".x3f",
+  ];
+  const lowerCaseUrl = url.toLowerCase();
+
+  // Extract the file extension from the URL
+  const parts = lowerCaseUrl.split(".");
+  const extension = parts.length > 1 ? `.${parts.pop()}` : "";
+
+  return imageExtensions.includes(extension);
+};

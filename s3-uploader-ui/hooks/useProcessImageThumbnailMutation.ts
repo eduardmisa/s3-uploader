@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { uploadThumbnailToS3 } from "@/lib/aws-s3";
-import { getThumbnailUrl, getS3KeyFromUrl } from "@/utils/urlUtil";
+import { getThumbnailUrl, getS3KeyFromUrl, isImageUrl } from "@/utils/urlUtil";
 
 interface ProcessImageThumbnailMutationVariables {
   items: { url: string }[];
@@ -10,6 +10,7 @@ interface ProcessImageThumbnailMutationVariables {
 const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
+
     img.src = imageUrl;
 
     img.onload = () => {
@@ -53,42 +54,59 @@ export const useProcessImageThumbnailMutation = () => {
 
   return useMutation({
     mutationFn: async ({ items }: ProcessImageThumbnailMutationVariables) => {
-      const results = await Promise.all(
-        items.map(async (item) => {
-          try {
-            const fullImageUrl = `https://cdn.file-manager.emisa.me/${item.url}`;
-            const thumbnailUrl = getThumbnailUrl(fullImageUrl);
+      const BATCH_SIZE = 10;
+      const allResults: { url: string; status: string; error?: string }[] = [];
 
-            if (!thumbnailUrl) {
+      for (let i = 0; i < items.length; i += BATCH_SIZE) {
+        const batch = items.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const fullImageUrl = `https://cdn.file-manager.emisa.me/${item.url}`;
+
+              if (!isImageUrl(fullImageUrl)) {
+                return {
+                  url: item.url,
+                  status: "skipped",
+                  error: "Not an image file",
+                };
+              }
+
+              const thumbnailUrl = getThumbnailUrl(fullImageUrl);
+
+              if (!thumbnailUrl) {
+                return {
+                  url: item.url,
+                  status: "failed",
+                  error: "Could not generate thumbnail URL",
+                };
+              }
+
+              const thumbnailBlob = await generateThumbnail(fullImageUrl);
+
+              if (thumbnailBlob) {
+                const thumbnailKey = getS3KeyFromUrl(thumbnailUrl);
+
+                await uploadThumbnailToS3(thumbnailBlob, thumbnailKey);
+
+                return { url: item.url, status: "success" };
+              }
+
               return {
                 url: item.url,
                 status: "failed",
-                error: "Could not generate thumbnail URL",
+                error: "Thumbnail generation failed",
               };
+            } catch (error: any) {
+              return { url: item.url, status: "failed", error: error.message };
             }
+          }),
+        );
 
-            const thumbnailBlob = await generateThumbnail(fullImageUrl);
+        allResults.push(...batchResults);
+      }
 
-            if (thumbnailBlob) {
-              const thumbnailKey = getS3KeyFromUrl(thumbnailUrl);
-
-              await uploadThumbnailToS3(thumbnailBlob, thumbnailKey);
-
-              return { url: item.url, status: "success" };
-            }
-
-            return {
-              url: item.url,
-              status: "failed",
-              error: "Thumbnail generation failed",
-            };
-          } catch (error: any) {
-            return { url: item.url, status: "failed", error: error.message };
-          }
-        }),
-      );
-
-      return results;
+      return allResults;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["s3Files"] });
