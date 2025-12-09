@@ -92,6 +92,7 @@ export const uploadThumbnailToS3 = async (
     });
 
     await parallelUploads3.done();
+
     return { success: true };
   } catch (error) {
     throw error;

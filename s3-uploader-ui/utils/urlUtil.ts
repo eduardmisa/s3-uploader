@@ -39,10 +39,12 @@ export const getThumbnailUrl = (url: string) => {
 export const getS3KeyFromUrl = (url: string): string => {
   try {
     const urlObj = new URL(url);
+
     // Decode the URI component to handle special characters in S3 keys
     return decodeURIComponent(urlObj.pathname.replace(/^\//, ""));
   } catch (error) {
     console.error("Error extracting S3 key from URL:", error);
+
     return "";
   }
 };

@@ -28,6 +28,7 @@ const getFileType = (filename: string): FileType => {
   if (videoExtensions.includes(extension)) {
     return "Videos";
   }
+
   return "Others";
 };
 
@@ -48,9 +49,11 @@ export default function IndexPage() {
     if (filterType === "All") {
       return currentFolderImages || [];
     }
+
     return (
       currentFolderImages?.filter((url) => {
         const filename = url.split("/").pop() || "";
+
         return getFileType(filename) === filterType;
       }) || []
     );
@@ -142,25 +145,17 @@ export default function IndexPage() {
         </div>
         <div className="flex w-full flex-col items-end">
           <Select
-            label="Filter by type"
             className="max-w-xs mx-auto"
+            label="Filter by type"
             selectedKeys={[filterType]}
             onSelectionChange={(keys) => {
               setFilterType(Array.from(keys)[0] as FileType);
             }}
           >
-            <SelectItem key="All">
-              All
-            </SelectItem>
-            <SelectItem key="Pictures">
-              Pictures
-            </SelectItem>
-            <SelectItem key="Videos">
-              Videos
-            </SelectItem>
-            <SelectItem key="Others">
-              Others
-            </SelectItem>
+            <SelectItem key="All">All</SelectItem>
+            <SelectItem key="Pictures">Pictures</SelectItem>
+            <SelectItem key="Videos">Videos</SelectItem>
+            <SelectItem key="Others">Others</SelectItem>
           </Select>
         </div>
       </section>

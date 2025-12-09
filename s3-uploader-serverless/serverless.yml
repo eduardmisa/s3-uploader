@@ -86,18 +86,6 @@ functions:
               - Authorization
             allowCredentials: true
 
-  generateThumbnails:
-    handler: src/handlers/generateThumbnails.generateThumbnails
-    events:
-      - http:
-          path: thumbnails/generate
-          method: post
-          cors:
-            origins: ${self:custom.allowedOrigins}
-            headers:
-              - Content-Type
-              - Authorization
-            allowCredentials: true
 
   login:
     handler: src/handlers/login.login
