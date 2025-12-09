@@ -24,8 +24,8 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
     }
 
     const BATCH_SIZE = 10;
-    const body = JSON.parse(event.body || "{}");
-    const inputList: any = body.keys || body.urls || body.files || [];
+    const body: { url: string; thumbnail?: string }[] = JSON.parse(event.body || "[]");
+    const inputList = body;
 
     if (!Array.isArray(inputList) || inputList.length === 0) {
       return {
@@ -38,7 +38,7 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
     if (inputList.length > BATCH_SIZE) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: `Too many files requested. Max per request is ${BATCH_SIZE}` }),
+        body: JSON.stringify({ message: `Too many items requested. Max per request is ${BATCH_SIZE}` }),
         headers: getCorsHeaders(event),
       };
     }
@@ -55,45 +55,47 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
       }
     };
 
-    const requestedKeys = inputList
-      .map((v: string) => parseKeyFromUrl(String(v).trim()))
-      .filter((k: string) => k && !k.endsWith("/"));
-
-    if (requestedKeys.length === 0) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "No valid S3 keys were parsed from the request" }),
-        headers: getCorsHeaders(event),
-      };
-    }
-
     const created: string[] = [];
-    const errors: { key: string; error: string }[] = [];
+    const errors: { url: string; error: string }[] = [];
 
-    for (const key of requestedKeys) {
+    for (const item of inputList) {
+      const { url, thumbnail } = item;
+      const key = parseKeyFromUrl(url);
+
+      if (!key || key.endsWith("/")) {
+        errors.push({ url, error: "Skipped (invalid S3 key)" });
+        continue;
+      }
+
       try {
         if (key.includes("-thumbnail")) {
-          errors.push({ key, error: "Skipped (already a thumbnail)" });
+          errors.push({ url, error: "Skipped (already a thumbnail)" });
           continue;
         }
 
-        console.log(`Processing ${key}`);
-        const originalBuffer = await getObjectBuffer(key);
-
+        console.log(`Processing ${url}`);
         let thumbBuffer: Buffer;
 
-        if (isImageKey(key)) {
-          thumbBuffer = await sharp(originalBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
-        } else if (isVideoKey(key)) {
-          const frameBuffer = await extractFrameFromVideo(originalBuffer);
-          if (!frameBuffer || frameBuffer.length === 0) {
-            throw new Error("Failed to extract frame from video");
-          }
-
-          thumbBuffer = await sharp(frameBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
+        if (thumbnail) {
+          // Use provided base64 thumbnail
+          const base64Data = thumbnail.replace(/^data:image\/\w+;base64,/, "");
+          thumbBuffer = Buffer.from(base64Data, "base64");
         } else {
-          errors.push({ key, error: "Skipped (unsupported file type)" });
-          continue;
+          // Generate thumbnail from URL
+          const originalBuffer = await getObjectBuffer(key);
+
+          if (isImageKey(key)) {
+            thumbBuffer = await sharp(originalBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
+          } else if (isVideoKey(key)) {
+            const frameBuffer = await extractFrameFromVideo(originalBuffer);
+            if (!frameBuffer || frameBuffer.length === 0) {
+              throw new Error("Failed to extract frame from video");
+            }
+            thumbBuffer = await sharp(frameBuffer).resize({ width: 200, withoutEnlargement: true }).jpeg().toBuffer();
+          } else {
+            errors.push({ url, error: "Skipped (unsupported file type for thumbnail generation)" });
+            continue;
+          }
         }
 
         const thumbKey = buildThumbnailKey(key);
@@ -109,8 +111,8 @@ export const generateThumbnails: APIGatewayProxyHandler = withAuth(async (event)
         await s3Client.send(putCmd);
         created.push(thumbKey);
       } catch (err) {
-        console.error(`Failed to process ${key}:`, err);
-        errors.push({ key, error: err instanceof Error ? err.message : String(err) });
+        console.error(`Failed to process ${url}:`, err);
+        errors.push({ url, error: err instanceof Error ? err.message : String(err) });
       }
     }
 
