@@ -11,7 +11,13 @@ interface ProcessImageThumbnailMutationVariables {
 const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await axios.get(imageUrl, { responseType: "blob" });
+      const response = await axios.get(imageUrl, {
+        responseType: "blob",
+        withCredentials: true,
+        headers: {
+          Cookie: `CloudFront-Key-Pair-Id=${document.cookie.match(/CloudFront-Key-Pair-Id=([^;]+)/)?.[1]}; CloudFront-Policy=${document.cookie.match(/CloudFront-Policy=([^;]+)/)?.[1]}; CloudFront-Signature=${document.cookie.match(/CloudFront-Signature=([^;]+)/)?.[1]}`,
+        },
+      });
       const imageBlob = response.data;
 
       const img = new Image();
@@ -66,7 +72,7 @@ export const useProcessImageThumbnailMutation = () => {
       const BATCH_SIZE = 10;
       const allResults: { url: string; status: string; error?: string }[] = [];
 
-      for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      for (let i = 0; i < 20; i += BATCH_SIZE) {
         const batch = items.slice(i, i + BATCH_SIZE);
         const batchResults = await Promise.all(
           batch.map(async (item) => {
