@@ -13,7 +13,6 @@ const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
     try {
       const response = await axios.get(imageUrl, {
         responseType: "arraybuffer", // or "blob" in browser
-        withCredentials: true
       });
       // const response = await axios.get(imageUrl, {
       //   responseType: "blob",
