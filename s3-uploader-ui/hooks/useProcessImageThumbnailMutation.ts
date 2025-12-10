@@ -12,12 +12,16 @@ const generateThumbnail = async (imageUrl: string): Promise<Blob | null> => {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await axios.get(imageUrl, {
-        responseType: "blob",
-        withCredentials: true,
-        headers: {
-          Cookie: `CloudFront-Key-Pair-Id=${document.cookie.match(/CloudFront-Key-Pair-Id=([^;]+)/)?.[1]}; CloudFront-Policy=${document.cookie.match(/CloudFront-Policy=([^;]+)/)?.[1]}; CloudFront-Signature=${document.cookie.match(/CloudFront-Signature=([^;]+)/)?.[1]}`,
-        },
+        responseType: "arraybuffer", // or "blob" in browser
+        withCredentials: true
       });
+      // const response = await axios.get(imageUrl, {
+      //   responseType: "blob",
+      //   withCredentials: true,
+      //   headers: {
+      //     Cookie: `CloudFront-Key-Pair-Id=${document.cookie.match(/CloudFront-Key-Pair-Id=([^;]+)/)?.[1]}; CloudFront-Policy=${document.cookie.match(/CloudFront-Policy=([^;]+)/)?.[1]}; CloudFront-Signature=${document.cookie.match(/CloudFront-Signature=([^;]+)/)?.[1]}`,
+      //   },
+      // });
       const imageBlob = response.data;
 
       const img = new Image();
